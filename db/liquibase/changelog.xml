@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="001-create-core-tables" author="codex">
+        <createTable tableName="users">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tg_id" type="BIGINT">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="role" type="VARCHAR(50)" defaultValue="user"/>
+        </createTable>
+        <createIndex tableName="users" indexName="ix_users_tg_id">
+            <column name="tg_id"/>
+        </createIndex>
+
+        <createTable tableName="chats">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tg_chat_id" type="BIGINT">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="title" type="VARCHAR(255)"/>
+        </createTable>
+        <createIndex tableName="chats" indexName="ix_chats_tg_chat_id">
+            <column name="tg_chat_id"/>
+        </createIndex>
+
+        <createTable tableName="programs">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="chat_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_programs_chats" referencedTableName="chats" referencedColumnNames="id"/>
+            </column>
+            <column name="days_total" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="post_time" type="VARCHAR(5)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="timezone" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)" defaultValue="active"/>
+            <column name="exercises_per_day" type="INT" defaultValueNumeric="3"/>
+            <column name="groups_per_day" type="INT" defaultValueNumeric="2"/>
+        </createTable>
+        <createIndex tableName="programs" indexName="ix_programs_chat_id">
+            <column name="chat_id"/>
+        </createIndex>
+
+        <createTable tableName="exercise_groups">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(128)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="exercises">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="group_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_exercises_groups" referencedTableName="exercise_groups" referencedColumnNames="id"/>
+            </column>
+            <column name="base_reps" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comment" type="TEXT"/>
+            <column name="video_path" type="VARCHAR(1024)"/>
+            <column name="file_id" type="VARCHAR(512)"/>
+        </createTable>
+        <addUniqueConstraint tableName="exercises" columnNames="name,group_id" constraintName="uq_exercises_name_group"/>
+        <createIndex tableName="exercises" indexName="ix_exercises_group_id">
+            <column name="group_id"/>
+        </createIndex>
+
+        <createTable tableName="program_days">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="program_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_program_days_programs" referencedTableName="programs" referencedColumnNames="id"/>
+            </column>
+            <column name="day_index" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)" defaultValue="planned"/>
+        </createTable>
+        <addUniqueConstraint tableName="program_days" columnNames="program_id,day_index" constraintName="uq_program_days_program_day"/>
+        <createIndex tableName="program_days" indexName="ix_program_days_program_id">
+            <column name="program_id"/>
+        </createIndex>
+
+        <createTable tableName="day_exercises">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="program_day_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_day_exercises_program_days" referencedTableName="program_days" referencedColumnNames="id"/>
+            </column>
+            <column name="exercise_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_day_exercises_exercises" referencedTableName="exercises" referencedColumnNames="id"/>
+            </column>
+            <column name="reps" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="day_exercises" columnNames="program_day_id,exercise_id" constraintName="uq_day_exercises_day_exercise"/>
+        <createIndex tableName="day_exercises" indexName="ix_day_exercises_program_day_id">
+            <column name="program_day_id"/>
+        </createIndex>
+
+        <createTable tableName="completions">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="program_day_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_completions_program_days" referencedTableName="program_days" referencedColumnNames="id"/>
+            </column>
+            <column name="user_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_completions_users" referencedTableName="users" referencedColumnNames="id"/>
+            </column>
+            <column name="completed_at" type="TIMESTAMP"/>
+            <column name="is_completed" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+        <addUniqueConstraint tableName="completions" columnNames="program_day_id,user_id" constraintName="uq_completions_day_user"/>
+        <createIndex tableName="completions" indexName="ix_completions_program_day_id">
+            <column name="program_day_id"/>
+        </createIndex>
+        <createIndex tableName="completions" indexName="ix_completions_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

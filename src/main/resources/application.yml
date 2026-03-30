@@ -1,0 +1,28 @@
+challenge:
+  bot:
+    token: ${BOT_TOKEN:}
+    username: ${BOT_USERNAME:challenge_bot}
+    chat-id: ${CHAT_ID:0}
+    timezone: ${TIMEZONE:Europe/Moscow}
+    post-time: ${POST_TIME:08:00}
+    exercises-per-day: ${EXERCISES_PER_DAY:3}
+    groups-per-day: ${GROUPS_PER_DAY:2}
+    reps-growth-percent: ${REPS_GROWTH_PERCENT:0.05}
+    reps-round-mode: ${REPS_ROUND_MODE:ceil}
+
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DB_USER:challenge}
+    password: ${DB_PASSWORD:challenge}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}

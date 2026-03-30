@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_NAME:-challenge}
+      POSTGRES_USER: ${DB_USER:-challenge}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-challenge}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    command: ["postgres", "-c", "listen_addresses=*"]
+    ports:
+      - "0.0.0.0:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  bot:
+    build: .
+    env_file: .env
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  pgdata:

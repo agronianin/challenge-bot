@@ -8,4 +8,5 @@ RUN mvn -q -DskipTests package
 FROM eclipse-temurin:25-jre
 WORKDIR /app
 COPY --from=build /app/target/challenge-bot-0.1.0-SNAPSHOT.jar /app/app.jar
+RUN mkdir -p /app/logs
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

@@ -6,7 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class BotProperties {
     private String token;
     private String username;
-    private long chatId;
     private String timezone;
     private String postTime;
     private int exercisesPerDay;
@@ -30,12 +29,10 @@ public class BotProperties {
         this.username = username;
     }
 
-    public long getChatId() {
-        return chatId;
-    }
-
-    public void setChatId(long chatId) {
-        this.chatId = chatId;
+    public boolean hasConfiguredToken() {
+        return token != null
+                && !token.isBlank()
+                && !"replace_me".equalsIgnoreCase(token.trim());
     }
 
     public String getTimezone() {

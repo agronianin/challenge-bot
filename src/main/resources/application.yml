@@ -2,7 +2,6 @@ challenge:
   bot:
     token: ${BOT_TOKEN:}
     username: ${BOT_USERNAME:challenge_bot}
-    chat-id: ${CHAT_ID:0}
     timezone: ${TIMEZONE:Europe/Moscow}
     post-time: ${POST_TIME:08:00}
     exercises-per-day: ${EXERCISES_PER_DAY:3}
@@ -12,7 +11,7 @@ challenge:
 
 spring:
   datasource:
-    url: ${DATABASE_URL}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/challenge}
     username: ${DB_USER:challenge}
     password: ${DB_PASSWORD:challenge}
   jpa:
@@ -26,3 +25,5 @@ spring:
 logging:
   level:
     root: ${LOG_LEVEL:INFO}
+  file:
+    name: ${LOG_FILE:./logs/app.log}

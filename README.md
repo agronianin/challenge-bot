@@ -1,79 +1,148 @@
-# Challenge Bot (Spring Boot)
+# Challenge Bot
 
-## What is ready
-- Spring Boot skeleton with Telegram bot wiring.
-- JPA entities and repositories.
-- Liquibase changelog for PostgreSQL.
-- CSV importer and selection logic placeholders.
+## Текущее состояние
 
-## Requirements
-- Java 25 (latest supported by Spring Boot 4.0.x)
+- Есть Spring Boot приложение с базовой интеграцией Telegram Bot API.
+- Есть PostgreSQL через Spring Data JPA.
+- Миграции Liquibase запускаются отдельно, а не при старте приложения.
+- Есть Dockerfile и Docker Compose для бота и базы данных.
+
+Бизнес-логика challenge пока реализована не полностью. На текущем этапе задача репозитория — дать стабильную основу для деплоя и дальнейшей разработки.
+
+## Требования
+
+- Java 25
 - Maven 3.9+
+- Docker и Docker Compose
 
-## Environment
-`.env` is already present; use `.env.example` as a reference.
+## Конфигурация
 
-```
-BOT_TOKEN=replace_me
-BOT_USERNAME=challenge_bot
-CHAT_ID=replace_me
+Создай `.env` на основе `.env.example` и заполни его реальными значениями.
 
-DB_NAME=challenge
-DB_USER=challenge
-DB_PASSWORD=challenge
-DATABASE_URL=jdbc:postgresql://postgres:5432/challenge
+Важно:
 
-TIMEZONE=Europe/Moscow
-POST_TIME=08:00
-EXERCISES_PER_DAY=3
-GROUPS_PER_DAY=2
-REPS_GROWTH_PERCENT=0.05
-REPS_ROUND_MODE=ceil
-LOG_LEVEL=INFO
-```
+- `.env` должен храниться только локально на машине разработчика и на сервере, в репозиторий его коммитить нельзя;
+- `.env.example` хранится в репозитории как шаблон без секретов;
+- `DATABASE_URL` в `.env` используется для локального запуска через `mvn spring-boot:run`.
+- В Docker Compose для контейнера бота он переопределяется на `jdbc:postgresql://postgres:5432/challenge`.
+- Если `BOT_TOKEN` пустой или равен `replace_me`, приложение стартует, но Telegram polling не запускается.
 
-## Liquibase
-Liquibase changelog: `db/liquibase/changelog.xml`
-Run Liquibase separately (example):
+Практический вариант хранения секретов для этого проекта:
 
-```
-liquibase \
-  --url="jdbc:postgresql://localhost:5432/challenge" \
-  --username=challenge \
-  --password=challenge \
-  --changeLogFile=db/liquibase/changelog.xml \
-  update
-```
+- реальные значения хранить в локальном `.env`, который игнорируется Git;
+- на сервере также хранить отдельный локальный `.env`;
+- для резервного хранения пароля БД лучше использовать менеджер паролей или зашифрованную заметку, а не репозиторий.
 
-## Run locally
-```
-mvn spring-boot:run
-```
+## Локальный запуск
 
-## Run with Docker
-```
+1. Поднять PostgreSQL:
+
+```bash
 docker compose up -d postgres
-# run liquibase here
+```
+
+2. Применить миграции:
+
+```bash
+docker compose run --rm --profile tools migrate
+```
+
+3. Запустить приложение:
+
+```bash
 mvn spring-boot:run
 ```
 
-## CSV format
-```
-id,name,group,base_reps,comment,video_path
+Логи по умолчанию пишутся в `./logs/app.log`.
+
+## Запуск в Docker
+
+1. Поднять PostgreSQL:
+
+```bash
+docker compose up -d postgres
 ```
 
-## External PostgreSQL access
-Docker exposes port `5432` and listens on all interfaces.
-If you have an existing volume, `POSTGRES_INITDB_ARGS` won't reapply; recreate the volume if needed.
-On Ubuntu with UFW, allow access from your IP only:
+2. Применить миграции:
 
-```
-sudo ufw allow from <your_ip> to any port 5432 proto tcp
-sudo ufw status
+```bash
+docker compose run --rm --profile tools migrate
 ```
 
-## TODO
-- Implement selection logic in `ExerciseSelector`.
-- Implement CSV import in `CsvImporter`.
-- Implement daily scheduler flow in `DailyRunner`.
-- Implement command parsing in `UpdateHandler`.
+3. Поднять бота:
+
+```bash
+docker compose up -d --build bot
+```
+
+## Деплой на Ubuntu сервер
+
+Минимальный сценарий:
+
+1. Скопировать проект на сервер.
+2. Создать `.env` из `.env.example`.
+3. Заполнить реальный `BOT_TOKEN`.
+4. Поднять PostgreSQL:
+
+```bash
+docker compose up -d postgres
+```
+
+5. Применить миграции:
+
+```bash
+docker compose run --rm --profile tools migrate
+```
+
+6. Поднять бота:
+
+```bash
+docker compose up -d --build bot
+```
+
+## Обновление на новую версию
+
+Если меняется только код приложения или миграции, а PostgreSQL уже работает, достаточно:
+
+```bash
+git pull
+docker compose run --rm --profile tools migrate
+docker compose up -d --build bot
+```
+
+Почему здесь нет `docker compose up -d postgres`:
+
+- если PostgreSQL уже поднят и его конфигурацию менять не нужно, повторно трогать его не надо;
+- если позже ты поменяешь образ PostgreSQL в `docker-compose.yml`, то отдельное обновление базы стоит делать осознанно и вручную, потому что смена версии PostgreSQL поверх старого volume может требовать отдельной процедуры миграции данных.
+
+Данные базы хранятся в Docker volume `pgdata`.
+
+## Миграции базы данных
+
+- Changelog: `db/liquibase/changelog.xml`
+- Миграции применяются вручную отдельной командой:
+
+```bash
+docker compose run --rm --profile tools migrate
+```
+
+- Предпросмотр SQL без применения:
+
+```bash
+docker compose run --rm --profile tools migrate updateSQL
+```
+
+- История примененных migration:
+
+```bash
+docker compose run --rm --profile tools migrate history
+```
+
+По умолчанию команда `docker compose run --rm --profile tools migrate` выводит логи прямо в терминал. Так как используется `--rm`, контейнер удаляется после завершения, поэтому постоянного места для просмотра этих логов после выполнения нет. Если нужно сохранить вывод, его лучше сразу перенаправить в файл или запускать без `--rm`.
+
+## Текущие ограничения
+
+- `CsvImporter` пока не реализован.
+- `ExerciseSelector` пока не реализован.
+- `DailyRunner` пока не реализован.
+- `UpdateHandler` пока содержит только минимальный тестовый сценарий.

@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
-    <changeSet id="001-create-core-tables" author="codex">
+    <changeSet id="001-create-users" author="victormskl@gmail.com">
         <createTable tableName="users">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -16,10 +16,15 @@
             <column name="name" type="VARCHAR(255)"/>
             <column name="role" type="VARCHAR(50)" defaultValue="user"/>
         </createTable>
+    </changeSet>
+
+    <changeSet id="002-index-users-tg-id" author="victormskl@gmail.com">
         <createIndex tableName="users" indexName="ix_users_tg_id">
             <column name="tg_id"/>
         </createIndex>
+    </changeSet>
 
+    <changeSet id="003-create-chats" author="victormskl@gmail.com">
         <createTable tableName="chats">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -29,10 +34,15 @@
             </column>
             <column name="title" type="VARCHAR(255)"/>
         </createTable>
+    </changeSet>
+
+    <changeSet id="004-index-chats-tg-chat-id" author="victormskl@gmail.com">
         <createIndex tableName="chats" indexName="ix_chats_tg_chat_id">
             <column name="tg_chat_id"/>
         </createIndex>
+    </changeSet>
 
+    <changeSet id="005-create-programs" author="victormskl@gmail.com">
         <createTable tableName="programs">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -56,10 +66,15 @@
             <column name="exercises_per_day" type="INT" defaultValueNumeric="3"/>
             <column name="groups_per_day" type="INT" defaultValueNumeric="2"/>
         </createTable>
+    </changeSet>
+
+    <changeSet id="006-index-programs-chat-id" author="victormskl@gmail.com">
         <createIndex tableName="programs" indexName="ix_programs_chat_id">
             <column name="chat_id"/>
         </createIndex>
+    </changeSet>
 
+    <changeSet id="007-create-exercise-groups" author="victormskl@gmail.com">
         <createTable tableName="exercise_groups">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -68,7 +83,9 @@
                 <constraints nullable="false" unique="true"/>
             </column>
         </createTable>
+    </changeSet>
 
+    <changeSet id="008-create-exercises" author="victormskl@gmail.com">
         <createTable tableName="exercises">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -86,11 +103,19 @@
             <column name="video_path" type="VARCHAR(1024)"/>
             <column name="file_id" type="VARCHAR(512)"/>
         </createTable>
+    </changeSet>
+
+    <changeSet id="009-unique-exercises-name-group" author="victormskl@gmail.com">
         <addUniqueConstraint tableName="exercises" columnNames="name,group_id" constraintName="uq_exercises_name_group"/>
+    </changeSet>
+
+    <changeSet id="010-index-exercises-group-id" author="victormskl@gmail.com">
         <createIndex tableName="exercises" indexName="ix_exercises_group_id">
             <column name="group_id"/>
         </createIndex>
+    </changeSet>
 
+    <changeSet id="011-create-program-days" author="victormskl@gmail.com">
         <createTable tableName="program_days">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -106,11 +131,19 @@
             </column>
             <column name="status" type="VARCHAR(32)" defaultValue="planned"/>
         </createTable>
+    </changeSet>
+
+    <changeSet id="012-unique-program-days-program-day" author="victormskl@gmail.com">
         <addUniqueConstraint tableName="program_days" columnNames="program_id,day_index" constraintName="uq_program_days_program_day"/>
+    </changeSet>
+
+    <changeSet id="013-index-program-days-program-id" author="victormskl@gmail.com">
         <createIndex tableName="program_days" indexName="ix_program_days_program_id">
             <column name="program_id"/>
         </createIndex>
+    </changeSet>
 
+    <changeSet id="014-create-day-exercises" author="victormskl@gmail.com">
         <createTable tableName="day_exercises">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -125,11 +158,19 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+    </changeSet>
+
+    <changeSet id="015-unique-day-exercises-day-exercise" author="victormskl@gmail.com">
         <addUniqueConstraint tableName="day_exercises" columnNames="program_day_id,exercise_id" constraintName="uq_day_exercises_day_exercise"/>
+    </changeSet>
+
+    <changeSet id="016-index-day-exercises-program-day-id" author="victormskl@gmail.com">
         <createIndex tableName="day_exercises" indexName="ix_day_exercises_program_day_id">
             <column name="program_day_id"/>
         </createIndex>
+    </changeSet>
 
+    <changeSet id="017-create-completions" author="victormskl@gmail.com">
         <createTable tableName="completions">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -143,10 +184,19 @@
             <column name="completed_at" type="TIMESTAMP"/>
             <column name="is_completed" type="BOOLEAN" defaultValueBoolean="true"/>
         </createTable>
+    </changeSet>
+
+    <changeSet id="018-unique-completions-day-user" author="victormskl@gmail.com">
         <addUniqueConstraint tableName="completions" columnNames="program_day_id,user_id" constraintName="uq_completions_day_user"/>
+    </changeSet>
+
+    <changeSet id="019-index-completions-program-day-id" author="victormskl@gmail.com">
         <createIndex tableName="completions" indexName="ix_completions_program_day_id">
             <column name="program_day_id"/>
         </createIndex>
+    </changeSet>
+
+    <changeSet id="020-index-completions-user-id" author="victormskl@gmail.com">
         <createIndex tableName="completions" indexName="ix_completions_user_id">
             <column name="user_id"/>
         </createIndex>

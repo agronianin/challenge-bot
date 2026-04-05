@@ -201,4 +201,15 @@
             <column name="user_id"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="021-add-static-reps-fields-to-exercises" author="victormskl@gmail.com">
+        <addColumn tableName="exercises">
+            <column name="is_static_reps" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="static_reps" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

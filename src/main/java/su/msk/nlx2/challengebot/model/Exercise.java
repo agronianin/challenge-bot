@@ -42,6 +42,12 @@ public class Exercise {
     @Column(name = "base_reps", nullable = false)
     private Integer baseReps;
 
+    @Column(name = "is_static_reps", nullable = false)
+    private Boolean staticReps = false;
+
+    @Column(name = "static_reps", nullable = false)
+    private Integer staticRepsValue = 0;
+
     @Column(name = "comment")
     private String comment;
 

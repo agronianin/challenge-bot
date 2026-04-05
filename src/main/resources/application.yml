@@ -19,11 +19,10 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
+        format_sql: true
         jdbc:
           time_zone: UTC
 
 logging:
-  level:
-    root: ${LOG_LEVEL:INFO}
   file:
-    name: ${LOG_FILE:./logs/app.log}
+    path: ${LOG_DIR:./logs}

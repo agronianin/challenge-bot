@@ -31,6 +31,8 @@
 - `.env.example`;
 - README на русском;
 - отделенный процесс миграций через отдельный compose-сервис `migrate`.
+- корневой Java package `su.msk.nlx2.challengebot`;
+- `logback-spring.xml` с двумя ротационными файлами логов.
 
 Что еще не готово:
 

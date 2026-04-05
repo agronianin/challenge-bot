@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.model.User;
 import com.pengrad.telegrambot.model.shared.SharedUser;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import su.msk.nlx2.challengebot.model.UserRole;
 import su.msk.nlx2.challengebot.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ public class UserService {
 
     public boolean isAdmin(Long tgId) {
         return userRepository.findByTgId(tgId)
-                .map(user -> "admin".equalsIgnoreCase(user.getRole()))
+                .map(user -> user.getRole() == UserRole.ADMIN)
                 .orElse(false);
     }
 
@@ -59,7 +60,7 @@ public class UserService {
         su.msk.nlx2.challengebot.model.User user = new su.msk.nlx2.challengebot.model.User();
         user.setTgId(sharedUser.userId());
         user.setName(buildDisplayName(sharedUser.firstName(), sharedUser.lastName(), sharedUser.username()));
-        user.setRole("admin");
+        user.setRole(UserRole.ADMIN);
         return userRepository.save(user);
     }
 
@@ -68,7 +69,7 @@ public class UserService {
             SharedUser sharedUser
     ) {
         existing.setName(buildDisplayName(sharedUser.firstName(), sharedUser.lastName(), sharedUser.username()));
-        existing.setRole("admin");
+        existing.setRole(UserRole.ADMIN);
         return userRepository.save(existing);
     }
 

@@ -212,4 +212,19 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="022-upcase-user-roles" author="victormskl@gmail.com">
+        <update tableName="users">
+            <column name="role" value="USER"/>
+            <where>role = 'user'</where>
+        </update>
+
+        <update tableName="users">
+            <column name="role" value="ADMIN"/>
+            <where>role = 'admin'</where>
+        </update>
+
+        <dropDefaultValue tableName="users" columnName="role" columnDataType="VARCHAR(50)"/>
+        <addDefaultValue tableName="users" columnName="role" columnDataType="VARCHAR(50)" defaultValue="USER"/>
+    </changeSet>
 </databaseChangeLog>

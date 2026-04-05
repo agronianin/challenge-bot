@@ -44,7 +44,7 @@ docker compose up -d postgres
 2. Применить миграции:
 
 ```bash
-docker compose run --rm --profile tools migrate
+docker compose --profile tools run --rm migrate
 ```
 
 3. Запустить приложение:
@@ -66,7 +66,7 @@ docker compose up -d postgres
 2. Применить миграции:
 
 ```bash
-docker compose run --rm --profile tools migrate
+docker compose --profile tools run --rm migrate
 ```
 
 3. Поднять бота:
@@ -91,7 +91,7 @@ docker compose up -d postgres
 5. Применить миграции:
 
 ```bash
-docker compose run --rm --profile tools migrate
+docker compose --profile tools run --rm migrate
 ```
 
 6. Поднять бота:
@@ -106,7 +106,7 @@ docker compose up -d --build bot
 
 ```bash
 git pull
-docker compose run --rm --profile tools migrate
+docker compose --profile tools run --rm migrate
 docker compose up -d --build bot
 ```
 
@@ -123,22 +123,22 @@ docker compose up -d --build bot
 - Миграции применяются вручную отдельной командой:
 
 ```bash
-docker compose run --rm --profile tools migrate
+docker compose --profile tools run --rm migrate
 ```
 
 - Предпросмотр SQL без применения:
 
 ```bash
-docker compose run --rm --profile tools migrate updateSQL
+docker compose --profile tools run --rm migrate updateSQL
 ```
 
 - История примененных migration:
 
 ```bash
-docker compose run --rm --profile tools migrate history
+docker compose --profile tools run --rm migrate history
 ```
 
-По умолчанию команда `docker compose run --rm --profile tools migrate` выводит логи прямо в терминал. Так как используется `--rm`, контейнер удаляется после завершения, поэтому постоянного места для просмотра этих логов после выполнения нет. Если нужно сохранить вывод, его лучше сразу перенаправить в файл или запускать без `--rm`.
+По умолчанию команда `docker compose --profile tools run --rm migrate` выводит логи прямо в терминал. Так как используется `--rm`, контейнер удаляется после завершения, поэтому постоянного места для просмотра этих логов после выполнения нет. Если нужно сохранить вывод, его лучше сразу перенаправить в файл или запускать без `--rm`.
 
 ## Текущие ограничения
 

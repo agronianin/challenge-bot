@@ -26,13 +26,12 @@ services:
     environment:
       DATABASE_URL: "jdbc:postgresql://postgres:5432/challenge"
       LOG_DIR: "/app/logs"
-      SPRING_CONFIG_ADDITIONAL_LOCATION: "optional:file:/app/config/"
-      LOGGING_CONFIG: "/app/config/logback-spring.xml"
+      SPRING_CONFIG_ADDITIONAL_LOCATION: "optional:file:/app/external-config/"
       JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     ports:
       - "0.0.0.0:5005:5005"
     volumes:
-      - ./config:/app/config
+      - ./config:/app/external-config
       - ./logs:/app/logs
 
   migrate:

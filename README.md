@@ -81,7 +81,14 @@
 - тексты в `UpdateHandler`, `MessageSender`, `AdminKeyboardFactory` и `UserKeyboardFactory` уже переведены на ключи локализации;
 - пользователь уже может менять язык через бота, и выбор сохраняется в `users.locale`;
 - файлы локализации сгруппированы по разделам с комментариями, чтобы ими было удобно пользоваться и дополнять.
-- для Docker редактируемые runtime-конфиги вынесены в каталог `config/`:
+- для Docker редактируемые runtime-конфиги не хранятся в Git;
+- они один раз выгружаются из образа в локальный каталог `config/` командой:
+
+```bash
+./scripts/init-config.sh
+```
+
+- после этого можно редактировать:
   - `config/application.yml`
   - `config/logback-spring.xml`
   - `config/messages/messages_ru.properties`
@@ -141,7 +148,13 @@ docker compose up -d postgres
 docker compose --profile tools run --rm migrate
 ```
 
-3. Поднять бота:
+3. Выгрузить редактируемые runtime-конфиги:
+
+```bash
+./scripts/init-config.sh
+```
+
+4. Поднять бота:
 
 ```bash
 docker compose up -d --build bot
@@ -169,7 +182,15 @@ docker compose up -d postgres
 docker compose --profile tools run --rm migrate
 ```
 
-6. Поднять бота:
+6. Выгрузить редактируемые runtime-конфиги:
+
+```bash
+./scripts/init-config.sh
+```
+
+7. При необходимости отредактировать файлы в `config/`.
+
+8. Поднять бота:
 
 ```bash
 docker compose up -d --build bot

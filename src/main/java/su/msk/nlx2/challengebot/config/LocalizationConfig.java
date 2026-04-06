@@ -12,7 +12,7 @@ public class LocalizationConfig {
     public MessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
         messageSource.setBasenames(
-                "file:/app/config/messages/messages",
+                "file:/app/external-config/messages/messages",
                 "classpath:messages/messages"
         );
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());

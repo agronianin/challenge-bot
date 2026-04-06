@@ -1,6 +1,8 @@
-package su.msk.nlx2.challengebot.bot;
+package su.msk.nlx2.challengebot.model.type;
 
-public enum AdminFlowStep {
+public enum ConversationStep {
+    AWAIT_MAX_PULL_UPS,
+    AWAIT_REMINDER_TIME,
     ADD_ADMIN_AWAIT_USER,
     CREATE_CHALLENGE_AWAIT_CHAT,
     CREATE_CHALLENGE_AWAIT_START_DATE,

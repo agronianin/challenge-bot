@@ -1,4 +1,4 @@
-package su.msk.nlx2.challengebot.bot;
+package su.msk.nlx2.challengebot.service.bot;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.GetMe;

@@ -5,7 +5,7 @@ import com.pengrad.telegrambot.model.User;
 import com.pengrad.telegrambot.model.shared.SharedUser;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import su.msk.nlx2.challengebot.model.UserRole;
+import su.msk.nlx2.challengebot.model.type.UserRole;
 import su.msk.nlx2.challengebot.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +16,11 @@ public class UserService {
 
     public Optional<su.msk.nlx2.challengebot.model.User> findByTgId(Long tgId) {
         return userRepository.findByTgId(tgId);
+    }
+
+    public su.msk.nlx2.challengebot.model.User getRequiredByTgId(Long tgId) {
+        return userRepository.findByTgId(tgId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found for tgId=" + tgId));
     }
 
     public boolean isAdmin(Long tgId) {
@@ -39,6 +44,18 @@ public class UserService {
         return userRepository.findByTgId(sharedUser.userId())
                 .map(existing -> updatePromotedUser(existing, sharedUser))
                 .orElseGet(() -> createPromotedUser(sharedUser));
+    }
+
+    public su.msk.nlx2.challengebot.model.User setMaxPullUps(Long tgId, int maxPullUps) {
+        su.msk.nlx2.challengebot.model.User user = getRequiredByTgId(tgId);
+        user.setMaxPullUps(maxPullUps);
+        return userRepository.save(user);
+    }
+
+    public su.msk.nlx2.challengebot.model.User setLocale(Long tgId, String locale) {
+        su.msk.nlx2.challengebot.model.User user = getRequiredByTgId(tgId);
+        user.setLocale(locale);
+        return userRepository.save(user);
     }
 
     private su.msk.nlx2.challengebot.model.User createFromTelegram(User from) {

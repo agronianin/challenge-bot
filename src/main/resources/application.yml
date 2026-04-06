@@ -8,6 +8,8 @@ challenge:
     groups-per-day: ${GROUPS_PER_DAY:2}
     reps-growth-percent: ${REPS_GROWTH_PERCENT:0.05}
     reps-round-mode: ${REPS_ROUND_MODE:ceil}
+  localization:
+    default-locale: ru
 
 spring:
   datasource:

@@ -14,7 +14,7 @@
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="role" type="VARCHAR(50)" defaultValue="user"/>
+            <column name="role" type="VARCHAR(50)" defaultValue="USER"/>
         </createTable>
     </changeSet>
 
@@ -202,29 +202,63 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="021-add-static-reps-fields-to-exercises" author="victormskl@gmail.com">
+    <changeSet id="021-add-static-reps-flag-to-exercises" author="victormskl@gmail.com">
         <addColumn tableName="exercises">
             <column name="is_static_reps" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="022-add-static-reps-value-to-exercises" author="victormskl@gmail.com">
+        <addColumn tableName="exercises">
             <column name="static_reps" type="INT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
 
-    <changeSet id="022-upcase-user-roles" author="victormskl@gmail.com">
-        <update tableName="users">
-            <column name="role" value="USER"/>
-            <where>role = 'user'</where>
-        </update>
+    <changeSet id="023-add-user-max-pull-ups" author="victormskl@gmail.com">
+        <addColumn tableName="users">
+            <column name="max_pull_ups" type="INT"/>
+        </addColumn>
+    </changeSet>
 
-        <update tableName="users">
-            <column name="role" value="ADMIN"/>
-            <where>role = 'admin'</where>
-        </update>
+    <changeSet id="024-create-user-reminders" author="victormskl@gmail.com">
+        <createTable tableName="user_reminders">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="INT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_user_reminders_users"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="remind_time" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
 
-        <dropDefaultValue tableName="users" columnName="role" columnDataType="VARCHAR(50)"/>
-        <addDefaultValue tableName="users" columnName="role" columnDataType="VARCHAR(50)" defaultValue="USER"/>
+    <changeSet id="025-add-user-reminders-user-time-unique" author="victormskl@gmail.com">
+        <addUniqueConstraint tableName="user_reminders"
+                             columnNames="user_id,remind_time"
+                             constraintName="uq_user_reminders_user_time"/>
+    </changeSet>
+
+    <changeSet id="026-index-user-reminders-user-id" author="victormskl@gmail.com">
+        <createIndex tableName="user_reminders" indexName="ix_user_reminders_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="027-add-user-locale" author="victormskl@gmail.com">
+        <addColumn tableName="users">
+            <column name="locale" type="VARCHAR(16)"/>
+        </addColumn>
     </changeSet>
 </databaseChangeLog>

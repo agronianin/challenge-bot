@@ -1,10 +1,8 @@
-package su.msk.nlx2.challengebot.bot;
+package su.msk.nlx2.challengebot.service.bot;
 
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.model.request.ParseMode;
-import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
-import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.model.request.Keyboard;
+import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SendVideo;
 import com.pengrad.telegrambot.response.SendResponse;
@@ -24,13 +22,6 @@ public class MessageSender {
 
     public void sendText(long chatId, String text, Keyboard keyboard) {
         bot.execute(new SendMessage(chatId, text).parseMode(ParseMode.HTML).replyMarkup(keyboard));
-    }
-
-    public void sendHelloButton(long chatId) {
-        InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup(
-                new InlineKeyboardButton("привет").callbackData("hello_button")
-        );
-        bot.execute(new SendMessage(chatId, "Нажми кнопку:").replyMarkup(keyboard));
     }
 
     public String sendVideo(long chatId, Exercise exercise, String caption) {

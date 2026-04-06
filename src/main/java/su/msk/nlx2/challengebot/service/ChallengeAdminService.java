@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import su.msk.nlx2.challengebot.bot.AdminSession;
+import su.msk.nlx2.challengebot.model.message.ConversationSession;
 import su.msk.nlx2.challengebot.model.Chat;
 import su.msk.nlx2.challengebot.model.Program;
 import su.msk.nlx2.challengebot.model.ProgramDay;
@@ -28,7 +28,7 @@ public class ChallengeAdminService {
     }
 
     @Transactional
-    public Program createProgram(AdminSession session) {
+    public Program createProgram(ConversationSession session) {
         Chat chat = chatRepository.findByTgChatId(session.getChatTgId())
                 .map(existing -> updateChat(existing, session))
                 .orElseGet(() -> createChat(session));
@@ -58,14 +58,14 @@ public class ChallengeAdminService {
         return savedProgram;
     }
 
-    private Chat createChat(AdminSession session) {
+    private Chat createChat(ConversationSession session) {
         Chat chat = new Chat();
         chat.setTgChatId(session.getChatTgId());
         chat.setTitle(session.getChatTitle());
         return chatRepository.save(chat);
     }
 
-    private Chat updateChat(Chat existing, AdminSession session) {
+    private Chat updateChat(Chat existing, ConversationSession session) {
         existing.setTitle(session.getChatTitle());
         return chatRepository.save(existing);
     }

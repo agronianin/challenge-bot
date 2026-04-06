@@ -14,10 +14,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class UserKeyboardFactory {
-    public static final String ACTION_SET_MAX_PULL_UPS = "set_max_pull_ups";
-    public static final String ACTION_ADD_REMINDER = "add_reminder";
-    public static final String ACTION_SHOW_REMINDERS = "show_reminders";
-    public static final String ACTION_CHANGE_LANGUAGE = "change_language";
     public static final String DELETE_REMINDER_CALLBACK_PREFIX = "delete_reminder:";
     public static final String SET_LOCALE_CALLBACK_PREFIX = "set_locale:";
 

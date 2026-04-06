@@ -128,11 +128,16 @@
 ### Архитектура обработки сообщений
 
 - `UpdateHandler` должен заниматься только routing и orchestration верхнего уровня.
+- Разрешение пользователя, роли и локали должно выноситься в отдельный resolver-сервис.
+- Обработка private message и callback query не должна разрастаться внутри `UpdateHandler`; её нужно выносить в отдельные service-классы.
 - Текстовые шаги диалогов обрабатываются через `MessageHandlerProvider`.
 - Для каждого `ConversationStep` должен быть отдельный `MessageHandler`.
 - Пользователь и администратор должны идти по одному общему циклу обработки личных сообщений.
 - Отличие администратора от обычного пользователя должно выражаться в дополнительных кнопках и ветках внутри общего цикла, а не в отдельном наборе session/service-классов.
 - На текущем этапе используются:
+  - `BotRequestContextResolver` для разрешения пользователя, роли и локали
+  - `PrivateChatUpdateHandler` для основного private-flow
+  - `CallbackQueryUpdateHandler` для inline callback-ов
   - `ConversationService` + `ConversationSession` + `ConversationStep`
   - `MessageHandlerProvider` и набор handler-классов в `service.bot.message`
 

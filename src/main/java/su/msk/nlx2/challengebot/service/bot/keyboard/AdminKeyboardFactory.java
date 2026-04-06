@@ -12,20 +12,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class AdminKeyboardFactory {
-
-    public static final String ACTION_ADD_ADMIN = "add_admin";
-    public static final String ACTION_START_CHALLENGE = "start_challenge";
-    public static final String ACTION_CANCEL = "cancel";
-    public static final String ACTION_CREATE_CHALLENGE = "create_challenge";
-
     public static final int REQUEST_ID_ADD_ADMIN = 1001;
     public static final int REQUEST_ID_SELECT_CHAT = 1002;
 
     private final BotMessages botMessages;
-
-    public ReplyKeyboardMarkup adminMenu(Locale locale) {
-        return new ReplyKeyboardMarkup(addAdminLabel(locale), startChallengeLabel(locale)).resizeKeyboard(true).isPersistent(true);
-    }
 
     public ReplyKeyboardMarkup cancelOnly(Locale locale) {
         return new ReplyKeyboardMarkup(cancelLabel(locale)).resizeKeyboard(true).isPersistent(true);

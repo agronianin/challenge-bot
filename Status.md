@@ -42,6 +42,7 @@
 - в личке доступны действия: изменить `maxPullUps`, добавить reminder, показать reminders, удалить reminder;
 - добавлена базовая инфраструктура локализации: `LocalizationConfig`, `LocalizationProperties`, `BotMessages`, `messages_ru/en.properties`;
 - `UpdateHandler` переведен на routing через `MessageHandlerProvider`;
+- `UpdateHandler` ужат до верхнеуровневого routing и делегирует в `BotRequestContextResolver`, `PrivateChatUpdateHandler`, `CallbackQueryUpdateHandler`;
 - текстовые шаги диалогов вынесены в отдельные handler-классы;
 - пользовательский и административный flow объединены в `ConversationService` / `ConversationSession` / `ConversationStep`;
 - структура пакетов приведена к правилу: сервисы в `service`, модели в `model`, enum в `model.type`;

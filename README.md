@@ -81,6 +81,11 @@
 - тексты в `UpdateHandler`, `MessageSender`, `AdminKeyboardFactory` и `UserKeyboardFactory` уже переведены на ключи локализации;
 - пользователь уже может менять язык через бота, и выбор сохраняется в `users.locale`;
 - файлы локализации сгруппированы по разделам с комментариями, чтобы ими было удобно пользоваться и дополнять.
+- для Docker редактируемые runtime-конфиги вынесены в каталог `config/`:
+  - `config/application.yml`
+  - `config/logback-spring.xml`
+  - `config/messages/messages_ru.properties`
+  - `config/messages/messages_en.properties`
 
 По логам:
 
@@ -143,6 +148,7 @@ docker compose up -d --build bot
 ```
 
 После этого удаленный debug доступен на порту `5005`.
+Если менялись файлы в `config/`, достаточно перезапустить контейнер `bot`.
 
 ## Деплой на Ubuntu сервер
 
@@ -170,6 +176,7 @@ docker compose up -d --build bot
 ```
 
 После запуска бота можно подключаться удаленным дебагом к `SERVER_IP:5005`.
+Все редактируемые runtime-конфиги доступны на сервере в каталоге `config/`.
 
 ## Обновление на новую версию
 

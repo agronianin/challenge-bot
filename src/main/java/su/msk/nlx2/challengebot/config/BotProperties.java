@@ -13,7 +13,7 @@ public class BotProperties {
     private String timezone;
     private String postTime;
     private int exercisesPerDay;
-    private int groupsPerDay;
+    private int typesPerDay;
     private double repsGrowthPercent;
     private String repsRoundMode;
 

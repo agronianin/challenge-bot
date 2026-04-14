@@ -23,7 +23,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(
-        name = "program_days",
+        name = "program_day",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uq_program_days_program_day", columnNames = {"program_id", "day_index"})
         }
@@ -51,4 +51,7 @@ public class ProgramDay {
 
     @OneToMany(mappedBy = "programDay")
     private List<Completion> completions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "programDay")
+    private List<ProgramDayMessage> messages = new ArrayList<>();
 }

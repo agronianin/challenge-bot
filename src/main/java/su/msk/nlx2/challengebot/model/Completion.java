@@ -20,7 +20,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(
-        name = "completions",
+        name = "completion",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uq_completions_day_user", columnNames = {"program_day_id", "user_id"})
         }

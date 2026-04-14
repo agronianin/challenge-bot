@@ -3,12 +3,14 @@ package su.msk.nlx2.challengebot.service.bot;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.request.Keyboard;
 import com.pengrad.telegrambot.model.request.ParseMode;
+import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SendVideo;
 import com.pengrad.telegrambot.response.SendResponse;
 import java.io.File;
 import lombok.RequiredArgsConstructor;
 import su.msk.nlx2.challengebot.model.Exercise;
+import su.msk.nlx2.challengebot.model.bot.SentMessageInfo;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,22 +26,47 @@ public class MessageSender {
         bot.execute(new SendMessage(chatId, text).parseMode(ParseMode.HTML).replyMarkup(keyboard));
     }
 
-    public String sendVideo(long chatId, Exercise exercise, String caption) {
-        // TODO: use cached file_id when available and persist it.
+    public SentMessageInfo sendTextWithResult(long chatId, String text) {
+        SendResponse response = bot.execute(new SendMessage(chatId, text).parseMode(ParseMode.HTML));
+        return toSentMessageInfo(response, null);
+    }
+
+    public SentMessageInfo sendTextWithResult(long chatId, String text, Keyboard keyboard) {
+        SendResponse response = bot.execute(new SendMessage(chatId, text).parseMode(ParseMode.HTML).replyMarkup(keyboard));
+        return toSentMessageInfo(response, null);
+    }
+
+    public SentMessageInfo sendVideo(long chatId, Exercise exercise, String caption) {
         if (exercise.getFileId() != null && !exercise.getFileId().isBlank()) {
-            SendResponse response = bot.execute(new SendVideo(chatId, exercise.getFileId()).caption(caption));
-            return response.isOk() ? exercise.getFileId() : null;
+            SendResponse response = bot.execute(new SendVideo(chatId, exercise.getFileId()).caption(caption).parseMode(ParseMode.HTML));
+            if (response.isOk()) {
+                return toSentMessageInfo(response, exercise.getFileId());
+            }
         }
 
         if (exercise.getVideoPath() == null || exercise.getVideoPath().isBlank()) {
-            sendText(chatId, caption);
-            return null;
+            return sendTextWithResult(chatId, caption);
+        }
+        File videoFile = new File(exercise.getVideoPath());
+        if (!videoFile.isFile()) {
+            return sendTextWithResult(chatId, caption);
         }
 
-        SendResponse response = bot.execute(new SendVideo(chatId, new File(exercise.getVideoPath())).caption(caption));
+        SendResponse response = bot.execute(new SendVideo(chatId, videoFile).caption(caption).parseMode(ParseMode.HTML));
         if (response.isOk() && response.message() != null && response.message().video() != null) {
-            return response.message().video().fileId();
+            return toSentMessageInfo(response, response.message().video().fileId());
         }
-        return null;
+        return sendTextWithResult(chatId, caption);
+    }
+
+    public boolean deleteMessage(long chatId, int messageId) {
+        return bot.execute(new DeleteMessage(chatId, messageId)).isOk();
+    }
+
+    private SentMessageInfo toSentMessageInfo(SendResponse response, String fileId) {
+        if (!response.isOk() || response.message() == null) {
+            return new SentMessageInfo(null, fileId);
+        }
+        return new SentMessageInfo(response.message().messageId(), fileId);
     }
 }

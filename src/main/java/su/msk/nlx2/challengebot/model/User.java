@@ -21,7 +21,7 @@ import su.msk.nlx2.challengebot.model.type.UserRole;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "users")
+@Table(name = "tg_user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,6 +45,9 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Completion> completions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<ProgramParticipant> participations = new ArrayList<>();
 
     @OrderBy("remindTime asc")
     @OneToMany(mappedBy = "user")

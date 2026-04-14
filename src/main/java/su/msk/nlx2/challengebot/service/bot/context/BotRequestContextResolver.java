@@ -29,8 +29,8 @@ public class BotRequestContextResolver {
             return Optional.empty();
         }
         Long tgUserId = callbackQuery.from().id();
-        return userService.findByTgId(tgUserId)
-                .map(user -> toContext(user, tgUserId, callbackQuery.from().languageCode()));
+        var user = userService.syncFromTelegram(callbackQuery.from());
+        return Optional.of(toContext(user, tgUserId, callbackQuery.from().languageCode()));
     }
 
     public boolean isCancel(Message message, String cancelLabel) {

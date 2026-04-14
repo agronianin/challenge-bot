@@ -26,10 +26,7 @@ public class UserKeyboardFactory {
                 .addRow(showRemindersLabel(locale), changeLanguageLabel(locale));
 
         if (admin) {
-            keyboard.addRow(
-                    botMessages.text(locale, "menu.admin.add_admin"),
-                    botMessages.text(locale, "menu.admin.start_challenge")
-            );
+            keyboard.addRow(botMessages.text(locale, "menu.admin.section"));
         }
 
         return keyboard.resizeKeyboard(true).isPersistent(true);

@@ -5,7 +5,7 @@ challenge:
     timezone: ${TIMEZONE:Europe/Moscow}
     post-time: ${POST_TIME:08:00}
     exercises-per-day: ${EXERCISES_PER_DAY:3}
-    groups-per-day: ${GROUPS_PER_DAY:2}
+    types-per-day: ${TYPES_PER_DAY:2}
     reps-growth-percent: ${REPS_GROWTH_PERCENT:0.05}
     reps-round-mode: ${REPS_ROUND_MODE:ceil}
   localization:

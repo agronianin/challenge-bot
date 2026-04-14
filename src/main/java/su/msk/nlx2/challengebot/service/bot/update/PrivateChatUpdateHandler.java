@@ -1,17 +1,16 @@
 package su.msk.nlx2.challengebot.service.bot.update;
 
 import com.pengrad.telegrambot.model.Message;
-import com.pengrad.telegrambot.model.shared.SharedUser;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import su.msk.nlx2.challengebot.model.bot.AdminChallengeView;
 import su.msk.nlx2.challengebot.model.bot.BotUserContext;
 import su.msk.nlx2.challengebot.model.message.ConversationSession;
 import su.msk.nlx2.challengebot.model.type.ConversationStep;
 import su.msk.nlx2.challengebot.service.BotMessages;
 import su.msk.nlx2.challengebot.service.ChallengeAdminService;
 import su.msk.nlx2.challengebot.service.UserReminderService;
-import su.msk.nlx2.challengebot.service.UserService;
 import su.msk.nlx2.challengebot.service.bot.MessageSender;
 import su.msk.nlx2.challengebot.service.bot.context.BotRequestContextResolver;
 import su.msk.nlx2.challengebot.service.bot.conversation.ConversationService;
@@ -25,7 +24,6 @@ import su.msk.nlx2.challengebot.service.bot.message.MessageHandlerProvider;
 public class PrivateChatUpdateHandler {
     private final MessageSender messageSender;
     private final BotMessages botMessages;
-    private final UserService userService;
     private final UserReminderService userReminderService;
     private final UserKeyboardFactory userKeyboardFactory;
     private final AdminKeyboardFactory adminKeyboardFactory;
@@ -38,14 +36,6 @@ public class PrivateChatUpdateHandler {
         ConversationSession session = conversationService.find(context.tgUserId()).orElse(null);
         if (botRequestContextResolver.isCancel(message, adminKeyboardFactory.cancelLabel(context.locale()))) {
             handleCancel(message.chat().id(), context);
-            return;
-        }
-        if (message.usersShared() != null && context.admin() && session != null && session.getStep() == ConversationStep.ADD_ADMIN_AWAIT_USER) {
-            handleSharedUser(message, context.locale());
-            return;
-        }
-        if (message.chatShared() != null && context.admin() && session != null && session.getStep() == ConversationStep.CREATE_CHALLENGE_AWAIT_CHAT) {
-            handleSharedChat(message, session, context.locale());
             return;
         }
         if (session != null) {
@@ -91,6 +81,37 @@ public class PrivateChatUpdateHandler {
         messageSender.sendText(chatId, botMessages.text(locale, "menu.main"), userKeyboardFactory.mainMenu(locale, isAdmin));
     }
 
+    public void showAdminSectionMenu(long chatId, Locale locale) {
+        messageSender.sendText(chatId, botMessages.text(locale, "menu.admin.section"), adminKeyboardFactory.adminSectionMenu(locale));
+    }
+
+    public void showDeleteChallengeConfirmation(long chatId, Locale locale, int challengeId) {
+        messageSender.sendText(
+                chatId,
+                botMessages.text(locale, "admin.challenge.delete.confirm", challengeId),
+                adminKeyboardFactory.confirmDeleteChallengeKeyboard(locale, challengeId)
+        );
+    }
+
+    public void showManageChallenges(long chatId, Locale locale) {
+        var challenges = challengeAdminService.findManageablePrograms();
+        if (challenges.isEmpty()) {
+            messageSender.sendText(chatId, botMessages.text(locale, "admin.challenge.list.empty"));
+            return;
+        }
+        StringBuilder text = new StringBuilder(botMessages.text(locale, "admin.challenge.list.title")).append('\n').append('\n');
+        for (AdminChallengeView challenge : challenges) {
+            text.append('#').append(challenge.id()).append(" | ")
+                    .append(challenge.chatTitle()).append('\n')
+                    .append(botMessages.text(locale, "admin.challenge.item_status", botMessages.text(locale, "admin.challenge.status." + challenge.status()))).append('\n')
+                    .append(botMessages.text(locale, "admin.challenge.item_start", challenge.startDate())).append('\n')
+                    .append(botMessages.text(locale, "admin.challenge.item_post_time", challenge.postTime(), challenge.timezone())).append('\n')
+                    .append(botMessages.text(locale, "admin.challenge.item_days_total", challenge.daysTotal())).append('\n')
+                    .append('\n');
+        }
+        messageSender.sendText(chatId, text.toString().trim(), adminKeyboardFactory.manageChallengesKeyboard(locale, challenges));
+    }
+
     private void handleCancel(long chatId, BotUserContext context) {
         conversationService.clear(context.tgUserId());
         if (context.user().getMaxPullUps() == null) {
@@ -101,10 +122,8 @@ public class PrivateChatUpdateHandler {
     }
 
     private void handleConversationMessage(Message message, BotUserContext context, ConversationSession session) {
-        if (message.text() == null) {
-            return;
-        }
-        messageHandlerProvider.handle(session.getStep(), new MessageHandlerContext(message.chat().id(), context.tgUserId(), message.text().trim(), context.locale(), context.admin()));
+        String text = message.text() == null ? null : message.text().trim();
+        messageHandlerProvider.handle(session.getStep(), new MessageHandlerContext(message.chat().id(), context.tgUserId(), message, text, context.locale(), context.admin()));
     }
 
     private boolean handleUserMenuAction(long privateChatId, BotUserContext context, String text) {
@@ -129,6 +148,14 @@ public class PrivateChatUpdateHandler {
     }
 
     private boolean handleAdminMenuAction(long privateChatId, BotUserContext context, String text) {
+        if (adminKeyboardFactory.adminSectionLabel(context.locale()).equals(text)) {
+            showAdminSectionMenu(privateChatId, context.locale());
+            return true;
+        }
+        if (adminKeyboardFactory.backToMainMenuLabel(context.locale()).equals(text)) {
+            showMainMenu(privateChatId, true, context.locale());
+            return true;
+        }
         if (adminKeyboardFactory.addAdminLabel(context.locale()).equals(text)) {
             conversationService.start(context.tgUserId(), ConversationStep.ADD_ADMIN_AWAIT_USER);
             messageSender.sendText(privateChatId, botMessages.text(context.locale(), "admin.add_admin.select_user"), adminKeyboardFactory.addAdminKeyboard(context.locale()));
@@ -139,6 +166,15 @@ public class PrivateChatUpdateHandler {
             messageSender.sendText(privateChatId, botMessages.text(context.locale(), "challenge.create.select_chat"), adminKeyboardFactory.selectChatKeyboard(context.locale()));
             return true;
         }
+        if (adminKeyboardFactory.manageChallengesLabel(context.locale()).equals(text)) {
+            showManageChallenges(privateChatId, context.locale());
+            return true;
+        }
+        if (adminKeyboardFactory.importExercisesCsvLabel(context.locale()).equals(text)) {
+            conversationService.start(context.tgUserId(), ConversationStep.AWAIT_EXERCISE_CSV);
+            messageSender.sendText(privateChatId, botMessages.text(context.locale(), "admin.exercise_csv.ask"), adminKeyboardFactory.cancelOnly(context.locale()));
+            return true;
+        }
         return false;
     }
 
@@ -147,34 +183,4 @@ public class PrivateChatUpdateHandler {
         messageSender.sendText(chatId, botMessages.text(locale, "user.onboarding.max_pull_ups.ask"), adminKeyboardFactory.cancelOnly(locale));
     }
 
-    private void handleSharedUser(Message message, Locale locale) {
-        if (message.usersShared().requestId() != AdminKeyboardFactory.REQUEST_ID_ADD_ADMIN) {
-            messageSender.sendText(message.chat().id(), botMessages.text(locale, "admin.add_admin.repeat_select_user"), adminKeyboardFactory.addAdminKeyboard(locale));
-            return;
-        }
-        SharedUser[] users = message.usersShared().users();
-        if (users == null || users.length == 0) {
-            messageSender.sendText(message.chat().id(), botMessages.text(locale, "admin.add_admin.user_missing"), adminKeyboardFactory.addAdminKeyboard(locale));
-            return;
-        }
-        var promotedUser = userService.promoteToAdmin(users[0]);
-        conversationService.clear(message.from().id());
-        messageSender.sendText(message.chat().id(), botMessages.text(locale, "admin.add_admin.success", promotedUser.getName()), userKeyboardFactory.mainMenu(locale, true));
-    }
-
-    private void handleSharedChat(Message message, ConversationSession session, Locale locale) {
-        if (message.chatShared().requestId() != AdminKeyboardFactory.REQUEST_ID_SELECT_CHAT) {
-            messageSender.sendText(message.chat().id(), botMessages.text(locale, "challenge.create.invalid_chat_selection"), adminKeyboardFactory.selectChatKeyboard(locale));
-            return;
-        }
-        if (challengeAdminService.hasActiveOrScheduledProgram(message.chatShared().chatId())) {
-            conversationService.clear(message.from().id());
-            messageSender.sendText(message.chat().id(), botMessages.text(locale, "challenge.create.already_exists"), userKeyboardFactory.mainMenu(locale, true));
-            return;
-        }
-        session.setChatTgId(message.chatShared().chatId());
-        session.setChatTitle(message.chatShared().title() != null ? message.chatShared().title() : "chat " + message.chatShared().chatId());
-        session.setStep(ConversationStep.CREATE_CHALLENGE_AWAIT_START_DATE);
-        messageSender.sendText(message.chat().id(), botMessages.text(locale, "challenge.create.ask_start_date"), adminKeyboardFactory.cancelOnly(locale));
-    }
 }

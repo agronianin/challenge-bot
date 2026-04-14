@@ -10,7 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,23 +20,26 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(
-        name = "user_reminder",
+        name = "program_day_message",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uq_user_reminders_user_time", columnNames = {"user_id", "remind_time"})
+                @UniqueConstraint(name = "uq_program_day_messages_chat_message", columnNames = {"tg_chat_id", "message_id"})
         }
 )
-public class UserReminder {
+public class ProgramDayMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "program_day_id", nullable = false)
+    private ProgramDay programDay;
 
-    @Column(name = "enabled", nullable = false)
-    private Boolean enabled = true;
+    @Column(name = "tg_chat_id", nullable = false)
+    private Long tgChatId;
 
-    @Column(name = "remind_time", nullable = false)
-    private LocalTime remindTime;
+    @Column(name = "message_id", nullable = false)
+    private Integer messageId;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 }

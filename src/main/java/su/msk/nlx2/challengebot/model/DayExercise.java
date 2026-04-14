@@ -19,7 +19,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(
-        name = "day_exercises",
+        name = "day_exercise",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uq_day_exercises_day_exercise", columnNames = {"program_day_id", "exercise_id"})
         }

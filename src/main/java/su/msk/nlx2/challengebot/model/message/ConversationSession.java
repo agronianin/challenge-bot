@@ -16,5 +16,5 @@ public class ConversationSession {
     private String postTime;
     private String timezone;
     private Integer exercisesPerDay;
-    private Integer groupsPerDay;
+    private Integer typesPerDay;
 }

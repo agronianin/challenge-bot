@@ -2,8 +2,6 @@ package su.msk.nlx2.challengebot.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -17,13 +15,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "chats")
+@Table(name = "chat")
 public class Chat {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @Column(name = "tg_chat_id", nullable = false, unique = true)
+    @Column(name = "tg_chat_id", nullable = false)
     private Long tgChatId;
 
     @Column(name = "title")

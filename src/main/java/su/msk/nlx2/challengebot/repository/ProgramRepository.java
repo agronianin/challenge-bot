@@ -7,5 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProgramRepository extends JpaRepository<Program, Integer> {
     List<Program> findByStatus(String status);
-    boolean existsByChat_IdAndStatusIn(Integer chatId, Collection<String> statuses);
+    List<Program> findByStatusIn(Collection<String> statuses);
+    List<Program> findByStatusInOrderByStartDateDescIdDesc(Collection<String> statuses);
+    boolean existsByChat_TgChatIdAndStatusIn(Long tgChatId, Collection<String> statuses);
 }

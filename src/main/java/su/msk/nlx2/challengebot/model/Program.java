@@ -21,14 +21,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "programs")
+@Table(name = "program")
 public class Program {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_id", nullable = false)
+    @JoinColumn(name = "chat_tg_id", referencedColumnName = "tg_chat_id", nullable = false)
     private Chat chat;
 
     @Column(name = "days_total", nullable = false)
@@ -49,9 +49,15 @@ public class Program {
     @Column(name = "exercises_per_day", nullable = false)
     private Integer exercisesPerDay = 3;
 
-    @Column(name = "groups_per_day", nullable = false)
-    private Integer groupsPerDay = 2;
+    @Column(name = "types_per_day", nullable = false)
+    private Integer typesPerDay = 2;
+
+    @Column(name = "rest_day_frequency", nullable = false)
+    private Integer restDayFrequency = 0;
 
     @OneToMany(mappedBy = "program")
     private List<ProgramDay> days = new ArrayList<>();
+
+    @OneToMany(mappedBy = "program")
+    private List<ProgramParticipant> participants = new ArrayList<>();
 }

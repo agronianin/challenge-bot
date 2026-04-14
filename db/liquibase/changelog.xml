@@ -5,50 +5,42 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
-    <changeSet id="001-create-users" author="victormskl@gmail.com">
-        <createTable tableName="users">
+    <changeSet id="001-create-tg-user" author="victormskl@gmail.com">
+        <createTable tableName="tg_user">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="tg_id" type="BIGINT">
-                <constraints nullable="false" unique="true"/>
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_tg_user_tg_id"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="role" type="VARCHAR(50)" defaultValue="USER"/>
+            <column name="locale" type="VARCHAR(16)"/>
+            <column name="max_pull_ups" type="INT"/>
+            <column name="role" type="VARCHAR(50)" defaultValue="USER">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="002-index-users-tg-id" author="victormskl@gmail.com">
-        <createIndex tableName="users" indexName="ix_users_tg_id">
-            <column name="tg_id"/>
-        </createIndex>
-    </changeSet>
-
-    <changeSet id="003-create-chats" author="victormskl@gmail.com">
-        <createTable tableName="chats">
-            <column name="id" type="INT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
+    <changeSet id="002-create-chat" author="victormskl@gmail.com">
+        <createTable tableName="chat">
             <column name="tg_chat_id" type="BIGINT">
-                <constraints nullable="false" unique="true"/>
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_chat"/>
             </column>
             <column name="title" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
 
-    <changeSet id="004-index-chats-tg-chat-id" author="victormskl@gmail.com">
-        <createIndex tableName="chats" indexName="ix_chats_tg_chat_id">
-            <column name="tg_chat_id"/>
-        </createIndex>
-    </changeSet>
-
-    <changeSet id="005-create-programs" author="victormskl@gmail.com">
-        <createTable tableName="programs">
+    <changeSet id="003-create-program" author="victormskl@gmail.com">
+        <createTable tableName="program">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="chat_id" type="INT">
-                <constraints nullable="false" foreignKeyName="fk_programs_chats" referencedTableName="chats" referencedColumnNames="id"/>
+            <column name="chat_tg_id" type="BIGINT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_program_chat"
+                             referencedTableName="chat"
+                             referencedColumnNames="tg_chat_id"/>
             </column>
             <column name="days_total" type="INT">
                 <constraints nullable="false"/>
@@ -62,41 +54,68 @@
             <column name="timezone" type="VARCHAR(64)">
                 <constraints nullable="false"/>
             </column>
-            <column name="status" type="VARCHAR(32)" defaultValue="active"/>
-            <column name="exercises_per_day" type="INT" defaultValueNumeric="3"/>
-            <column name="groups_per_day" type="INT" defaultValueNumeric="2"/>
+            <column name="status" type="VARCHAR(32)" defaultValue="active">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exercises_per_day" type="INT" defaultValueNumeric="3">
+                <constraints nullable="false"/>
+            </column>
+            <column name="types_per_day" type="INT" defaultValueNumeric="2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rest_day_frequency" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="006-index-programs-chat-id" author="victormskl@gmail.com">
-        <createIndex tableName="programs" indexName="ix_programs_chat_id">
-            <column name="chat_id"/>
+    <changeSet id="004-index-program-chat-tg-id" author="victormskl@gmail.com">
+        <createIndex tableName="program" indexName="ix_program_chat_tg_id">
+            <column name="chat_tg_id"/>
         </createIndex>
     </changeSet>
 
-    <changeSet id="007-create-exercise-groups" author="victormskl@gmail.com">
-        <createTable tableName="exercise_groups">
-            <column name="id" type="INT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
+    <changeSet id="005-create-exercise-type" author="victormskl@gmail.com">
+        <createTable tableName="exercise_type">
             <column name="name" type="VARCHAR(128)">
-                <constraints nullable="false" unique="true"/>
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_exercise_type"/>
             </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="008-create-exercises" author="victormskl@gmail.com">
-        <createTable tableName="exercises">
+    <changeSet id="006-seed-exercise-type" author="victormskl@gmail.com">
+        <sql>
+            insert into exercise_type (name)
+            values ('спина'),
+                   ('пресс'),
+                   ('сгибатели ног'),
+                   ('разгибатели ног'),
+                   ('сгибатели рук'),
+                   ('разгибатели рук'),
+                   ('кардио'),
+                   ('Растяжка')
+            on conflict (name) do nothing
+        </sql>
+    </changeSet>
+
+    <changeSet id="007-create-exercise" author="victormskl@gmail.com">
+        <createTable tableName="exercise">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="name" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="group_id" type="INT">
-                <constraints nullable="false" foreignKeyName="fk_exercises_groups" referencedTableName="exercise_groups" referencedColumnNames="id"/>
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_exercise_name"/>
             </column>
             <column name="base_reps" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_static_reps" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="static_reps" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reps_unit" type="VARCHAR(32)" defaultValue="REPS">
                 <constraints nullable="false"/>
             </column>
             <column name="comment" type="TEXT"/>
@@ -105,23 +124,43 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="009-unique-exercises-name-group" author="victormskl@gmail.com">
-        <addUniqueConstraint tableName="exercises" columnNames="name,group_id" constraintName="uq_exercises_name_group"/>
+    <changeSet id="008-create-exercise-type-link" author="victormskl@gmail.com">
+        <createTable tableName="exercise_type_link">
+            <column name="exercise_id" type="INT">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_exercise_type_link"
+                             nullable="false"
+                             foreignKeyName="fk_exercise_type_link_exercise"
+                             referencedTableName="exercise"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="type_name" type="VARCHAR(128)">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_exercise_type_link"
+                             nullable="false"
+                             foreignKeyName="fk_exercise_type_link_exercise_type"
+                             referencedTableName="exercise_type"
+                             referencedColumnNames="name"/>
+            </column>
+        </createTable>
     </changeSet>
 
-    <changeSet id="010-index-exercises-group-id" author="victormskl@gmail.com">
-        <createIndex tableName="exercises" indexName="ix_exercises_group_id">
-            <column name="group_id"/>
+    <changeSet id="009-index-exercise-type-link-type-name" author="victormskl@gmail.com">
+        <createIndex tableName="exercise_type_link" indexName="ix_exercise_type_link_type_name">
+            <column name="type_name"/>
         </createIndex>
     </changeSet>
 
-    <changeSet id="011-create-program-days" author="victormskl@gmail.com">
-        <createTable tableName="program_days">
+    <changeSet id="010-create-program-day" author="victormskl@gmail.com">
+        <createTable tableName="program_day">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="program_id" type="INT">
-                <constraints nullable="false" foreignKeyName="fk_program_days_programs" referencedTableName="programs" referencedColumnNames="id"/>
+                <constraints nullable="false"
+                             foreignKeyName="fk_program_day_program"
+                             referencedTableName="program"
+                             referencedColumnNames="id"/>
             </column>
             <column name="day_index" type="INT">
                 <constraints nullable="false"/>
@@ -129,30 +168,40 @@
             <column name="date" type="DATE">
                 <constraints nullable="false"/>
             </column>
-            <column name="status" type="VARCHAR(32)" defaultValue="planned"/>
+            <column name="status" type="VARCHAR(32)" defaultValue="planned">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="012-unique-program-days-program-day" author="victormskl@gmail.com">
-        <addUniqueConstraint tableName="program_days" columnNames="program_id,day_index" constraintName="uq_program_days_program_day"/>
+    <changeSet id="011-add-program-day-program-day-unique" author="victormskl@gmail.com">
+        <addUniqueConstraint tableName="program_day"
+                             columnNames="program_id,day_index"
+                             constraintName="uq_program_days_program_day"/>
     </changeSet>
 
-    <changeSet id="013-index-program-days-program-id" author="victormskl@gmail.com">
-        <createIndex tableName="program_days" indexName="ix_program_days_program_id">
+    <changeSet id="012-index-program-day-program-id" author="victormskl@gmail.com">
+        <createIndex tableName="program_day" indexName="ix_program_day_program_id">
             <column name="program_id"/>
         </createIndex>
     </changeSet>
 
-    <changeSet id="014-create-day-exercises" author="victormskl@gmail.com">
-        <createTable tableName="day_exercises">
+    <changeSet id="013-create-day-exercise" author="victormskl@gmail.com">
+        <createTable tableName="day_exercise">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="program_day_id" type="INT">
-                <constraints nullable="false" foreignKeyName="fk_day_exercises_program_days" referencedTableName="program_days" referencedColumnNames="id"/>
+                <constraints nullable="false"
+                             foreignKeyName="fk_day_exercise_program_day"
+                             referencedTableName="program_day"
+                             referencedColumnNames="id"/>
             </column>
             <column name="exercise_id" type="INT">
-                <constraints nullable="false" foreignKeyName="fk_day_exercises_exercises" referencedTableName="exercises" referencedColumnNames="id"/>
+                <constraints nullable="false"
+                             foreignKeyName="fk_day_exercise_exercise"
+                             referencedTableName="exercise"
+                             referencedColumnNames="id"/>
             </column>
             <column name="reps" type="INT">
                 <constraints nullable="false"/>
@@ -160,79 +209,69 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="015-unique-day-exercises-day-exercise" author="victormskl@gmail.com">
-        <addUniqueConstraint tableName="day_exercises" columnNames="program_day_id,exercise_id" constraintName="uq_day_exercises_day_exercise"/>
+    <changeSet id="014-add-day-exercise-day-exercise-unique" author="victormskl@gmail.com">
+        <addUniqueConstraint tableName="day_exercise"
+                             columnNames="program_day_id,exercise_id"
+                             constraintName="uq_day_exercises_day_exercise"/>
     </changeSet>
 
-    <changeSet id="016-index-day-exercises-program-day-id" author="victormskl@gmail.com">
-        <createIndex tableName="day_exercises" indexName="ix_day_exercises_program_day_id">
+    <changeSet id="015-index-day-exercise-program-day-id" author="victormskl@gmail.com">
+        <createIndex tableName="day_exercise" indexName="ix_day_exercise_program_day_id">
             <column name="program_day_id"/>
         </createIndex>
     </changeSet>
 
-    <changeSet id="017-create-completions" author="victormskl@gmail.com">
-        <createTable tableName="completions">
+    <changeSet id="016-create-completion" author="victormskl@gmail.com">
+        <createTable tableName="completion">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="program_day_id" type="INT">
-                <constraints nullable="false" foreignKeyName="fk_completions_program_days" referencedTableName="program_days" referencedColumnNames="id"/>
+                <constraints nullable="false"
+                             foreignKeyName="fk_completion_program_day"
+                             referencedTableName="program_day"
+                             referencedColumnNames="id"/>
             </column>
             <column name="user_id" type="INT">
-                <constraints nullable="false" foreignKeyName="fk_completions_users" referencedTableName="users" referencedColumnNames="id"/>
+                <constraints nullable="false"
+                             foreignKeyName="fk_completion_tg_user"
+                             referencedTableName="tg_user"
+                             referencedColumnNames="id"/>
             </column>
             <column name="completed_at" type="TIMESTAMP"/>
-            <column name="is_completed" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="is_completed" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="018-unique-completions-day-user" author="victormskl@gmail.com">
-        <addUniqueConstraint tableName="completions" columnNames="program_day_id,user_id" constraintName="uq_completions_day_user"/>
+    <changeSet id="017-add-completion-day-user-unique" author="victormskl@gmail.com">
+        <addUniqueConstraint tableName="completion"
+                             columnNames="program_day_id,user_id"
+                             constraintName="uq_completions_day_user"/>
     </changeSet>
 
-    <changeSet id="019-index-completions-program-day-id" author="victormskl@gmail.com">
-        <createIndex tableName="completions" indexName="ix_completions_program_day_id">
+    <changeSet id="018-index-completion-program-day-id" author="victormskl@gmail.com">
+        <createIndex tableName="completion" indexName="ix_completion_program_day_id">
             <column name="program_day_id"/>
         </createIndex>
     </changeSet>
 
-    <changeSet id="020-index-completions-user-id" author="victormskl@gmail.com">
-        <createIndex tableName="completions" indexName="ix_completions_user_id">
+    <changeSet id="019-index-completion-user-id" author="victormskl@gmail.com">
+        <createIndex tableName="completion" indexName="ix_completion_user_id">
             <column name="user_id"/>
         </createIndex>
     </changeSet>
 
-    <changeSet id="021-add-static-reps-flag-to-exercises" author="victormskl@gmail.com">
-        <addColumn tableName="exercises">
-            <column name="is_static_reps" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false"/>
-            </column>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="022-add-static-reps-value-to-exercises" author="victormskl@gmail.com">
-        <addColumn tableName="exercises">
-            <column name="static_reps" type="INT" defaultValueNumeric="0">
-                <constraints nullable="false"/>
-            </column>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="023-add-user-max-pull-ups" author="victormskl@gmail.com">
-        <addColumn tableName="users">
-            <column name="max_pull_ups" type="INT"/>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="024-create-user-reminders" author="victormskl@gmail.com">
-        <createTable tableName="user_reminders">
+    <changeSet id="020-create-user-reminder" author="victormskl@gmail.com">
+        <createTable tableName="user_reminder">
             <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="user_id" type="INT">
                 <constraints nullable="false"
-                             foreignKeyName="fk_user_reminders_users"
-                             referencedTableName="users"
+                             foreignKeyName="fk_user_reminder_tg_user"
+                             referencedTableName="tg_user"
                              referencedColumnNames="id"/>
             </column>
             <column name="enabled" type="BOOLEAN" defaultValueBoolean="true">
@@ -244,21 +283,94 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="025-add-user-reminders-user-time-unique" author="victormskl@gmail.com">
-        <addUniqueConstraint tableName="user_reminders"
+    <changeSet id="021-add-user-reminder-user-time-unique" author="victormskl@gmail.com">
+        <addUniqueConstraint tableName="user_reminder"
                              columnNames="user_id,remind_time"
                              constraintName="uq_user_reminders_user_time"/>
     </changeSet>
 
-    <changeSet id="026-index-user-reminders-user-id" author="victormskl@gmail.com">
-        <createIndex tableName="user_reminders" indexName="ix_user_reminders_user_id">
+    <changeSet id="022-index-user-reminder-user-id" author="victormskl@gmail.com">
+        <createIndex tableName="user_reminder" indexName="ix_user_reminder_user_id">
             <column name="user_id"/>
         </createIndex>
     </changeSet>
 
-    <changeSet id="027-add-user-locale" author="victormskl@gmail.com">
-        <addColumn tableName="users">
-            <column name="locale" type="VARCHAR(16)"/>
-        </addColumn>
+    <changeSet id="023-create-program-participant" author="victormskl@gmail.com">
+        <createTable tableName="program_participant">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="program_id" type="INT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_program_participant_program"
+                             referencedTableName="program"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="user_id" type="INT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_program_participant_tg_user"
+                             referencedTableName="tg_user"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="joined_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="024-add-program-participant-program-user-unique" author="victormskl@gmail.com">
+        <addUniqueConstraint tableName="program_participant"
+                             columnNames="program_id,user_id"
+                             constraintName="uq_program_participants_program_user"/>
+    </changeSet>
+
+    <changeSet id="025-index-program-participant-program-id" author="victormskl@gmail.com">
+        <createIndex tableName="program_participant" indexName="ix_program_participant_program_id">
+            <column name="program_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="026-index-program-participant-user-id" author="victormskl@gmail.com">
+        <createIndex tableName="program_participant" indexName="ix_program_participant_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="027-create-program-day-message" author="victormskl@gmail.com">
+        <createTable tableName="program_day_message">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="program_day_id" type="INT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_program_day_message_program_day"
+                             referencedTableName="program_day"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="tg_chat_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="028-index-program-day-message-program-day-id" author="victormskl@gmail.com">
+        <createIndex tableName="program_day_message" indexName="ix_program_day_message_program_day_id">
+            <column name="program_day_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="029-add-program-day-message-chat-message-unique" author="victormskl@gmail.com">
+        <addUniqueConstraint tableName="program_day_message"
+                             columnNames="tg_chat_id,message_id"
+                             constraintName="uq_program_day_messages_chat_message"/>
     </changeSet>
 </databaseChangeLog>

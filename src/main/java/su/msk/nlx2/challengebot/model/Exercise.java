@@ -2,29 +2,35 @@ package su.msk.nlx2.challengebot.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import su.msk.nlx2.challengebot.model.type.RepsUnit;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @Table(
-        name = "exercises",
+        name = "exercise",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uq_exercises_name_group", columnNames = {"name", "group_id"})
+                @UniqueConstraint(name = "uq_exercise_name", columnNames = "name")
         }
 )
 public class Exercise {
@@ -35,9 +41,13 @@ public class Exercise {
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id", nullable = false)
-    private ExerciseGroup group;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "exercise_type_link",
+            joinColumns = @JoinColumn(name = "exercise_id"),
+            inverseJoinColumns = @JoinColumn(name = "type_name")
+    )
+    private Set<ExerciseType> types = new HashSet<>();
 
     @Column(name = "base_reps", nullable = false)
     private Integer baseReps;
@@ -47,6 +57,10 @@ public class Exercise {
 
     @Column(name = "static_reps", nullable = false)
     private Integer staticRepsValue = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reps_unit", nullable = false, length = 32)
+    private RepsUnit repsUnit = RepsUnit.REPS;
 
     @Column(name = "comment")
     private String comment;

@@ -10,7 +10,7 @@ public abstract class MessageHandler {
     protected MessageHandlerProvider messageHandlerProvider;
 
     @Autowired
-    void register(MessageHandlerProvider messageHandlerProvider) {
+    protected void register(MessageHandlerProvider messageHandlerProvider) {
         messageHandlerProvider.register(this);
     }
 

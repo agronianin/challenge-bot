@@ -34,7 +34,10 @@ public class UserService {
         if (from == null) {
             throw new IllegalArgumentException("Message sender is missing");
         }
+        return syncFromTelegram(from);
+    }
 
+    public su.msk.nlx2.challengebot.model.User syncFromTelegram(User from) {
         return userRepository.findByTgId(from.id())
                 .map(existing -> updateFromTelegram(existing, from))
                 .orElseGet(() -> createFromTelegram(from));

@@ -20,7 +20,6 @@ public class AdminAwaitTypesPerDayMessageHandler extends MessageHandler {
     private final BotMessages botMessages;
     private final ConversationService conversationService;
     private final AdminKeyboardFactory adminKeyboardFactory;
-    private final ChallengeSummaryBuilder challengeSummaryBuilder;
 
     @Override
     public ConversationStep getStep() {
@@ -31,12 +30,20 @@ public class AdminAwaitTypesPerDayMessageHandler extends MessageHandler {
     public void handle(MessageHandlerContext context) {
         Integer value = MessageParsingUtils.parsePositiveInteger(context.text());
         if (value == null) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "common.invalid_positive_integer"), adminKeyboardFactory.cancelOnly(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "common.invalid_positive_integer"),
+                    adminKeyboardFactory.cancelOnly(context.locale())
+            );
             return;
         }
         ConversationSession session = conversationService.find(context.tgUserId()).orElseThrow();
         session.setTypesPerDay(value);
-        session.setStep(ConversationStep.CREATE_CHALLENGE_AWAIT_CONFIRMATION);
-        messageSender.sendText(context.privateChatId(), challengeSummaryBuilder.build(session, context.locale()), adminKeyboardFactory.challengeConfirmationKeyboard(context.locale()));
+        session.setStep(ConversationStep.CREATE_CHALLENGE_AWAIT_REST_DAY_FREQUENCY);
+        messageSender.sendText(
+                context.privateChatId(),
+                botMessages.text(context.locale(), "challenge.create.ask_rest_day_frequency"),
+                adminKeyboardFactory.cancelOnly(context.locale())
+        );
     }
 }

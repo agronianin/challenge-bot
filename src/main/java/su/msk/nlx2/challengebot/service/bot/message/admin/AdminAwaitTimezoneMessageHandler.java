@@ -32,12 +32,20 @@ public class AdminAwaitTimezoneMessageHandler extends MessageHandler {
         try {
             ZoneId.of(context.text());
         } catch (Exception e) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "challenge.create.invalid_timezone"), adminKeyboardFactory.cancelOnly(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "challenge.create.invalid_timezone"),
+                    adminKeyboardFactory.timezoneKeyboard(context.locale())
+            );
             return;
         }
         ConversationSession session = conversationService.find(context.tgUserId()).orElseThrow();
         session.setTimezone(context.text());
         session.setStep(ConversationStep.CREATE_CHALLENGE_AWAIT_EXERCISES_PER_DAY);
-        messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "challenge.create.ask_exercises_per_day"), adminKeyboardFactory.cancelOnly(context.locale()));
+        messageSender.sendText(
+                context.privateChatId(),
+                botMessages.text(context.locale(), "challenge.create.ask_exercises_per_day"),
+                adminKeyboardFactory.cancelOnly(context.locale())
+        );
     }
 }

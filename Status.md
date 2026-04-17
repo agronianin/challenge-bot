@@ -32,6 +32,7 @@
 - README на русском;
 - отделенный процесс миграций через отдельный compose-сервис `migrate`.
 - корневой Java package `su.msk.nlx2.challengebot`;
+- добавлен Maven Wrapper с Maven 3.9.14 для сборки под Java 25 без Maven/Guice warning из старого Maven 3.9.11;
 - `logback-spring.xml` с двумя ротационными файлами логов.
 - runtime-конфиги бота выносятся в bind-mounted каталог `./config`, доступный с сервера без входа в контейнер;
 - контейнер `bot` по умолчанию публикует JDWP debug-порт `5005` для удаленной отладки;
@@ -41,31 +42,44 @@
 - у `chat` primary key теперь `tg_chat_id`, отдельного surrogate `id` больше нет;
 - Liquibase changelog схлопнут под чистую базу и сразу создает актуальную схему без переходных rename/migration changeset;
 - у `exercise_type` primary key теперь `name`, отдельного `id` нет;
-- в `program` добавлено поле `restDayFrequency`, пока с дефолтом `0`;
-- в модели `User` добавлено поле `locale` для будущей локализации;
-- в модели `User` добавлено поле `maxPullUps`;
+- в `program` добавлено поле `restDayFrequency` с дефолтом `0`;
+- при создании challenge администратор задает `restDayFrequency`;
+- Java-сущность пользователя переименована в `TgUser`, таблица БД остается `tg_user`;
+- в модели `TgUser` сохраненное поле локали называется `localeCode`, а runtime `Locale` хранится в transient-поле `locale`;
+- в модели `TgUser` добавлено поле `maxPullUps`;
 - добавлена таблица `user_reminder` для хранения нескольких личных времен напоминаний пользователя;
 - при первом личном диалоге бот обязательно запрашивает `maxPullUps`;
 - в личке доступны действия: изменить `maxPullUps`, добавить reminder, показать reminders, удалить reminder;
 - добавлена базовая инфраструктура локализации: `LocalizationConfig`, `LocalizationProperties`, `BotMessages`, `messages_ru/en.properties`;
 - `UpdateHandler` переведен на routing через `MessageHandlerProvider`;
 - `UpdateHandler` ужат до верхнеуровневого routing и делегирует в `BotRequestContextResolver`, `PrivateChatUpdateHandler`, `CallbackQueryUpdateHandler`;
+- `BotUserContext` удален: обработчики получают `TgUser`, роль берется из `user.isAdmin()`, tg id из `user.getTgId()`, локаль из `user.getLocale()`;
 - текстовые шаги диалогов вынесены в отдельные handler-классы;
 - обработчики шагов диалогов разнесены по подпакетам `service.bot.message.admin` и `service.bot.message.user`;
 - импорт CSV упражнений обрабатывается через `ConversationStep.AWAIT_EXERCISE_CSV` и отдельный `MessageHandler`, без специальной ветки в `PrivateChatUpdateHandler`;
+- пользовательское личное меню переведено на `InlineKeyboardMarkup` + `callback_data`, без сравнения локализованного текста;
+- callback-действия пользовательского меню маршрутизируются через `UserMenuActionHandlerProvider` и отдельные handler-классы;
+- административное меню переведено на `InlineKeyboardMarkup` + `callback_data`, без сравнения локализованного текста;
+- callback-действия административного меню маршрутизируются через `AdminMenuActionHandlerProvider` и отдельные handler-классы;
+- стартовые admin menu-действия (добавление админа, старт challenge, импорт CSV) перенесены из `PrivateChatUpdateHandler` в соответствующие admin handler-классы;
 - пользовательский и административный flow объединены в `ConversationService` / `ConversationSession` / `ConversationStep`;
 - структура пакетов приведена к правилу: сервисы в `service`, модели в `model`, enum в `model.type`;
 - корневой пакет `su.msk.nlx2.challengebot.bot` полностью убран;
 - есть административная панель в личном чате для пользователей с `role = ADMIN`;
 - административные действия вынесены во вложенное меню `Администрирование`;
 - роль пользователя в коде хранится как enum `UserRole`, а в БД как строка `USER/ADMIN`;
+- статус challenge в коде хранится как enum `ProgramStatus`, а в БД как строка `ACTIVE/SCHEDULED/PAUSED`;
 - есть добавление нового администратора через `requestUsers`;
 - есть пошаговое создание challenge через `requestChat` и последовательный ввод параметров;
+- при создании challenge timezone выбирается готовыми кнопками с возможностью ручного ввода любого корректного `ZoneId`;
 - есть список challenge для админа с возможностью поставить challenge на паузу и удалить его;
 - есть импорт метаданных упражнений из CSV через личный чат администратора;
 - есть таблица `program_participant` для участия пользователя в challenge;
-- есть callback-кнопка `Участвовать` в посте challenge;
+- есть callback-кнопка `Участвовать` в стартовом посте challenge и в посте дня;
+- повторное нажатие `Участвовать` активным участником не отправляет личное задание повторно, а отправляет ошибку вступления;
+- есть кнопка `Сдаюсь` в личном меню активного участника, она завершает все активные участия пользователя через `program_participant.active = false`;
 - есть scheduler, который публикует запланированный день challenge в групповой чат;
+- scheduler учитывает `restDayFrequency`: в выходной день публикует сообщение о выходном и не подбирает упражнения;
 - общий пост дня отправляется без повторений, а личная версия участникам отправляется с количеством повторений;
 - дата старта challenge больше не вводится вручную, challenge стартует с завтрашнего дня;
 - сообщения общего поста сохраняются в `program_day_message`;
@@ -88,6 +102,7 @@
 - Миграции запускаются вручную отдельной командой.
 - новые изменения Liquibase разбиваются на отдельные changeset.
 - локализация должна использовать `MessageSource` + `messages_*.properties`, а язык пользователя должен храниться в `tg_user.locale`;
+- в коде сохраненный язык называется `TgUser.localeCode`, а текущая разрешенная локаль запроса хранится в `TgUser.locale`;
 - текущие файлы локализации: `messages_ru.properties` и `messages_en.properties`;
 - если локаль Telegram не поддерживается, приложение должно использовать `ru`;
 - редактируемые runtime-конфиги должны жить в локальном `./config`, который создается отдельной инициализацией из образа и монтируется в контейнер бота;
@@ -219,7 +234,9 @@
 - [x] добавить кнопку вступления;
 - [x] сохранять участие;
 - [x] исключить дубли;
-- [ ] добавить кнопку выхода из challenge;
+- [x] временно ограничить пользователя одним активным challenge;
+- [x] хранить вычисленный флаг активного участия в `TgUser.activeParticipant` и убрать `PrivateChatState`;
+- [x] добавить кнопку выхода из challenge;
 - [ ] добавить пользовательский просмотр своих активных challenge.
 
 ### Этап 6. Личное сообщение участнику

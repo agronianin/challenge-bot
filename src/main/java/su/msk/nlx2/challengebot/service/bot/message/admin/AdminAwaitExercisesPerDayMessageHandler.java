@@ -30,12 +30,20 @@ public class AdminAwaitExercisesPerDayMessageHandler extends MessageHandler {
     public void handle(MessageHandlerContext context) {
         Integer value = MessageParsingUtils.parsePositiveInteger(context.text());
         if (value == null) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "common.invalid_positive_integer"), adminKeyboardFactory.cancelOnly(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "common.invalid_positive_integer"),
+                    adminKeyboardFactory.cancelOnly(context.locale())
+            );
             return;
         }
         ConversationSession session = conversationService.find(context.tgUserId()).orElseThrow();
         session.setExercisesPerDay(value);
         session.setStep(ConversationStep.CREATE_CHALLENGE_AWAIT_TYPES_PER_DAY);
-        messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "challenge.create.ask_types_per_day"), adminKeyboardFactory.cancelOnly(context.locale()));
+        messageSender.sendText(
+                context.privateChatId(),
+                botMessages.text(context.locale(), "challenge.create.ask_types_per_day"),
+                adminKeyboardFactory.cancelOnly(context.locale())
+        );
     }
 }

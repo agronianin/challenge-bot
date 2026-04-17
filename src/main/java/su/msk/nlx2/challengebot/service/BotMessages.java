@@ -3,7 +3,7 @@ package su.msk.nlx2.challengebot.service;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import su.msk.nlx2.challengebot.config.LocalizationProperties;
-import su.msk.nlx2.challengebot.model.User;
+import su.msk.nlx2.challengebot.model.TgUser;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
@@ -23,13 +23,16 @@ public class BotMessages {
         return messageSource.getMessage(code, args, locale);
     }
 
-    public String text(User user, String telegramLanguageCode, String code, Object... args) {
+    public String text(TgUser user, String telegramLanguageCode, String code, Object... args) {
         return text(resolveLocale(user, telegramLanguageCode), code, args);
     }
 
-    public Locale resolveLocale(User user, String telegramLanguageCode) {
-        if (user != null && user.getLocale() != null && !user.getLocale().isBlank()) {
-            return toSupportedLocale(user.getLocale());
+    public Locale resolveLocale(TgUser user, String telegramLanguageCode) {
+        if (user != null && user.getLocale() != null) {
+            return user.getLocale();
+        }
+        if (user != null && user.getLocaleCode() != null && !user.getLocaleCode().isBlank()) {
+            return toSupportedLocale(user.getLocaleCode());
         }
         if (telegramLanguageCode != null && !telegramLanguageCode.isBlank()) {
             return toSupportedLocale(telegramLanguageCode);

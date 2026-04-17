@@ -10,6 +10,7 @@ import su.msk.nlx2.challengebot.model.Chat;
 import su.msk.nlx2.challengebot.model.Program;
 import su.msk.nlx2.challengebot.model.ProgramDay;
 import su.msk.nlx2.challengebot.model.type.ProgramActionResult;
+import su.msk.nlx2.challengebot.model.type.ProgramStatus;
 import su.msk.nlx2.challengebot.repository.ChatRepository;
 import su.msk.nlx2.challengebot.repository.CompletionRepository;
 import su.msk.nlx2.challengebot.repository.DayExerciseRepository;
@@ -23,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ChallengeAdminService {
+    private static final List<ProgramStatus> MANAGEABLE_STATUSES = List.of(ProgramStatus.ACTIVE, ProgramStatus.SCHEDULED, ProgramStatus.PAUSED);
+
     private final ChatRepository chatRepository;
     private final ProgramRepository programRepository;
     private final ProgramDayRepository programDayRepository;
@@ -32,12 +35,12 @@ public class ChallengeAdminService {
     private final ProgramDayMessageRepository programDayMessageRepository;
 
     public boolean hasActiveOrScheduledProgram(Long tgChatId) {
-        return programRepository.existsByChat_TgChatIdAndStatusIn(tgChatId, List.of("active", "scheduled"));
+        return programRepository.existsByChat_TgChatIdAndStatusIn(tgChatId, List.of(ProgramStatus.ACTIVE, ProgramStatus.SCHEDULED));
     }
 
     @Transactional(readOnly = true)
     public List<AdminChallengeView> findManageablePrograms() {
-        return programRepository.findByStatusInOrderByStartDateDescIdDesc(List.of("active", "scheduled", "paused")).stream()
+        return programRepository.findByStatusInOrderByStartDateDescIdDesc(MANAGEABLE_STATUSES).stream()
                 .map(program -> new AdminChallengeView(
                         program.getId(),
                         program.getChat().getTitle() != null ? program.getChat().getTitle() : "chat " + program.getChat().getTgChatId(),
@@ -64,8 +67,8 @@ public class ChallengeAdminService {
         program.setTimezone(session.getTimezone());
         program.setExercisesPerDay(session.getExercisesPerDay());
         program.setTypesPerDay(session.getTypesPerDay());
-        program.setRestDayFrequency(0);
-        program.setStatus(session.getStartDate().isAfter(LocalDate.now()) ? "scheduled" : "active");
+        program.setRestDayFrequency(session.getRestDayFrequency());
+        program.setStatus(session.getStartDate().isAfter(LocalDate.now()) ? ProgramStatus.SCHEDULED : ProgramStatus.ACTIVE);
         Program savedProgram = programRepository.save(program);
 
         List<ProgramDay> days = new ArrayList<>();
@@ -88,10 +91,10 @@ public class ChallengeAdminService {
         if (program == null) {
             return ProgramActionResult.NOT_FOUND;
         }
-        if ("paused".equals(program.getStatus())) {
+        if (program.getStatus() == ProgramStatus.PAUSED) {
             return ProgramActionResult.NO_CHANGES;
         }
-        program.setStatus("paused");
+        program.setStatus(ProgramStatus.PAUSED);
         programRepository.save(program);
         return ProgramActionResult.SUCCESS;
     }

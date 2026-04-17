@@ -1,6 +1,7 @@
 package su.msk.nlx2.challengebot.model.bot;
 
 import java.time.LocalDate;
+import su.msk.nlx2.challengebot.model.type.ProgramStatus;
 
 public record AdminChallengeView(
         int id,
@@ -9,6 +10,6 @@ public record AdminChallengeView(
         String postTime,
         String timezone,
         int daysTotal,
-        String status
+        ProgramStatus status
 ) {
 }

@@ -11,10 +11,7 @@ public class LocalizationConfig {
     @Bean
     public MessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasenames(
-                "file:/app/external-config/messages/messages",
-                "classpath:messages/messages"
-        );
+        messageSource.setBasenames("file:/app/external-config/messages/messages", "classpath:messages/messages");
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
         messageSource.setFallbackToSystemLocale(false);
         messageSource.setUseCodeAsDefaultMessage(true);

@@ -29,12 +29,20 @@ public class AdminAwaitPostTimeMessageHandler extends MessageHandler {
     @Override
     public void handle(MessageHandlerContext context) {
         if (MessageParsingUtils.parseTime(context.text()) == null) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "common.invalid_time"), adminKeyboardFactory.cancelOnly(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "common.invalid_time"),
+                    adminKeyboardFactory.cancelOnly(context.locale())
+            );
             return;
         }
         ConversationSession session = conversationService.find(context.tgUserId()).orElseThrow();
         session.setPostTime(context.text());
         session.setStep(ConversationStep.CREATE_CHALLENGE_AWAIT_TIMEZONE);
-        messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "challenge.create.ask_timezone"), adminKeyboardFactory.cancelOnly(context.locale()));
+        messageSender.sendText(
+                context.privateChatId(),
+                botMessages.text(context.locale(), "challenge.create.ask_timezone"),
+                adminKeyboardFactory.timezoneKeyboard(context.locale())
+        );
     }
 }

@@ -37,15 +37,27 @@ public class UserAwaitReminderTimeMessageHandler extends MessageHandler {
     public void handle(MessageHandlerContext context) {
         LocalTime remindTime = MessageParsingUtils.parseTime(context.text());
         if (remindTime == null) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "common.invalid_time"), adminKeyboardFactory.cancelOnly(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "common.invalid_time"),
+                    adminKeyboardFactory.cancelOnly(context.locale())
+            );
             return;
         }
         boolean added = userReminderService.addReminder(context.tgUserId(), remindTime);
         if (!added) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "user.reminder.duplicate"), adminKeyboardFactory.cancelOnly(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "user.reminder.duplicate"),
+                    adminKeyboardFactory.cancelOnly(context.locale())
+            );
             return;
         }
         conversationService.clear(context.tgUserId());
-        messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "user.reminder.added", remindTime.format(TIME_FORMATTER)), userKeyboardFactory.mainMenu(context.locale(), context.admin()));
+        messageSender.sendText(
+                context.privateChatId(),
+                botMessages.text(context.locale(), "user.reminder.added", remindTime.format(TIME_FORMATTER)),
+                userKeyboardFactory.mainMenu(context.locale(), context.admin(), context.activeParticipant())
+        );
     }
 }

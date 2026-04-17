@@ -5,20 +5,21 @@ import com.pengrad.telegrambot.model.User;
 import com.pengrad.telegrambot.model.shared.SharedUser;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import su.msk.nlx2.challengebot.model.TgUser;
 import su.msk.nlx2.challengebot.model.type.UserRole;
 import su.msk.nlx2.challengebot.repository.UserRepository;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
 
-    public Optional<su.msk.nlx2.challengebot.model.User> findByTgId(Long tgId) {
+    public Optional<TgUser> findByTgId(Long tgId) {
         return userRepository.findByTgId(tgId);
     }
 
-    public su.msk.nlx2.challengebot.model.User getRequiredByTgId(Long tgId) {
+    public TgUser getRequiredByTgId(Long tgId) {
         return userRepository.findByTgId(tgId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found for tgId=" + tgId));
     }
@@ -29,7 +30,7 @@ public class UserService {
                 .orElse(false);
     }
 
-    public su.msk.nlx2.challengebot.model.User syncFromMessage(Message message) {
+    public TgUser syncFromMessage(Message message) {
         User from = message.from();
         if (from == null) {
             throw new IllegalArgumentException("Message sender is missing");
@@ -37,57 +38,51 @@ public class UserService {
         return syncFromTelegram(from);
     }
 
-    public su.msk.nlx2.challengebot.model.User syncFromTelegram(User from) {
+    public TgUser syncFromTelegram(User from) {
         return userRepository.findByTgId(from.id())
                 .map(existing -> updateFromTelegram(existing, from))
                 .orElseGet(() -> createFromTelegram(from));
     }
 
-    public su.msk.nlx2.challengebot.model.User promoteToAdmin(SharedUser sharedUser) {
+    public TgUser promoteToAdmin(SharedUser sharedUser) {
         return userRepository.findByTgId(sharedUser.userId())
                 .map(existing -> updatePromotedUser(existing, sharedUser))
                 .orElseGet(() -> createPromotedUser(sharedUser));
     }
 
-    public su.msk.nlx2.challengebot.model.User setMaxPullUps(Long tgId, int maxPullUps) {
-        su.msk.nlx2.challengebot.model.User user = getRequiredByTgId(tgId);
+    public TgUser setMaxPullUps(Long tgId, int maxPullUps) {
+        TgUser user = getRequiredByTgId(tgId);
         user.setMaxPullUps(maxPullUps);
         return userRepository.save(user);
     }
 
-    public su.msk.nlx2.challengebot.model.User setLocale(Long tgId, String locale) {
-        su.msk.nlx2.challengebot.model.User user = getRequiredByTgId(tgId);
-        user.setLocale(locale);
+    public TgUser setLocale(Long tgId, String localeCode) {
+        TgUser user = getRequiredByTgId(tgId);
+        user.setLocaleCode(localeCode);
         return userRepository.save(user);
     }
 
-    private su.msk.nlx2.challengebot.model.User createFromTelegram(User from) {
-        su.msk.nlx2.challengebot.model.User user = new su.msk.nlx2.challengebot.model.User();
+    private TgUser createFromTelegram(User from) {
+        TgUser user = new TgUser();
         user.setTgId(from.id());
         user.setName(buildDisplayName(from.firstName(), from.lastName(), from.username()));
         return userRepository.save(user);
     }
 
-    private su.msk.nlx2.challengebot.model.User updateFromTelegram(
-            su.msk.nlx2.challengebot.model.User existing,
-            User from
-    ) {
+    private TgUser updateFromTelegram(TgUser existing, User from) {
         existing.setName(buildDisplayName(from.firstName(), from.lastName(), from.username()));
         return userRepository.save(existing);
     }
 
-    private su.msk.nlx2.challengebot.model.User createPromotedUser(SharedUser sharedUser) {
-        su.msk.nlx2.challengebot.model.User user = new su.msk.nlx2.challengebot.model.User();
+    private TgUser createPromotedUser(SharedUser sharedUser) {
+        TgUser user = new TgUser();
         user.setTgId(sharedUser.userId());
         user.setName(buildDisplayName(sharedUser.firstName(), sharedUser.lastName(), sharedUser.username()));
         user.setRole(UserRole.ADMIN);
         return userRepository.save(user);
     }
 
-    private su.msk.nlx2.challengebot.model.User updatePromotedUser(
-            su.msk.nlx2.challengebot.model.User existing,
-            SharedUser sharedUser
-    ) {
+    private TgUser updatePromotedUser(TgUser existing, SharedUser sharedUser) {
         existing.setName(buildDisplayName(sharedUser.firstName(), sharedUser.lastName(), sharedUser.username()));
         existing.setRole(UserRole.ADMIN);
         return userRepository.save(existing);

@@ -3,6 +3,7 @@ package su.msk.nlx2.challengebot.service.bot.document;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Document;
 import com.pengrad.telegrambot.request.GetFile;
+import com.pengrad.telegrambot.response.GetFileResponse;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -31,7 +32,7 @@ public class TelegramDocumentService {
         if (document == null || document.fileId() == null || document.fileId().isBlank()) {
             throw new IllegalArgumentException("Document fileId is missing.");
         }
-        var response = bot.execute(new GetFile(document.fileId()));
+        GetFileResponse response = bot.execute(new GetFile(document.fileId()));
         if (!response.isOk() || response.file() == null) {
             throw new IllegalStateException("Не удалось получить файл из Telegram.");
         }

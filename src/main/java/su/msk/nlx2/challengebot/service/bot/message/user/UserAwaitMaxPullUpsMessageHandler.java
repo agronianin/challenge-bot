@@ -9,6 +9,7 @@ import su.msk.nlx2.challengebot.service.bot.keyboard.AdminKeyboardFactory;
 import su.msk.nlx2.challengebot.service.bot.MessageSender;
 import su.msk.nlx2.challengebot.service.bot.conversation.ConversationService;
 import su.msk.nlx2.challengebot.service.bot.keyboard.UserKeyboardFactory;
+import su.msk.nlx2.challengebot.model.TgUser;
 import su.msk.nlx2.challengebot.model.type.UserRole;
 import su.msk.nlx2.challengebot.model.type.ConversationStep;
 import su.msk.nlx2.challengebot.service.BotMessages;
@@ -34,12 +35,20 @@ public class UserAwaitMaxPullUpsMessageHandler extends MessageHandler {
     public void handle(MessageHandlerContext context) {
         Integer maxPullUps = MessageParsingUtils.parseNonNegativeInteger(context.text());
         if (maxPullUps == null) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "user.onboarding.max_pull_ups.invalid"), adminKeyboardFactory.cancelOnly(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "user.onboarding.max_pull_ups.invalid"),
+                    adminKeyboardFactory.cancelOnly(context.locale())
+            );
             return;
         }
-        var user = userService.setMaxPullUps(context.tgUserId(), maxPullUps);
+        TgUser user = userService.setMaxPullUps(context.tgUserId(), maxPullUps);
         conversationService.clear(context.tgUserId());
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
-        messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "user.onboarding.max_pull_ups.saved", maxPullUps), userKeyboardFactory.mainMenu(context.locale(), isAdmin));
+        messageSender.sendText(
+                context.privateChatId(),
+                botMessages.text(context.locale(), "user.onboarding.max_pull_ups.saved", maxPullUps),
+                userKeyboardFactory.mainMenu(context.locale(), isAdmin, context.activeParticipant())
+        );
     }
 }

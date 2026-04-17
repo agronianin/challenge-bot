@@ -3,6 +3,7 @@ package su.msk.nlx2.challengebot.service.bot.message.admin;
 import com.pengrad.telegrambot.model.shared.SharedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import su.msk.nlx2.challengebot.model.TgUser;
 import su.msk.nlx2.challengebot.model.type.ConversationStep;
 import su.msk.nlx2.challengebot.service.BotMessages;
 import su.msk.nlx2.challengebot.service.UserService;
@@ -31,20 +32,36 @@ public class AdminAwaitUserSelectionMessageHandler extends MessageHandler {
     @Override
     public void handle(MessageHandlerContext context) {
         if (context.message().usersShared() == null) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "admin.add_admin.repeat_select_user"), adminKeyboardFactory.addAdminKeyboard(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "admin.add_admin.repeat_select_user"),
+                    adminKeyboardFactory.addAdminKeyboard(context.locale())
+            );
             return;
         }
         if (context.message().usersShared().requestId() != AdminKeyboardFactory.REQUEST_ID_ADD_ADMIN) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "admin.add_admin.repeat_select_user"), adminKeyboardFactory.addAdminKeyboard(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "admin.add_admin.repeat_select_user"),
+                    adminKeyboardFactory.addAdminKeyboard(context.locale())
+            );
             return;
         }
         SharedUser[] users = context.message().usersShared().users();
         if (users == null || users.length == 0) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "admin.add_admin.user_missing"), adminKeyboardFactory.addAdminKeyboard(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "admin.add_admin.user_missing"),
+                    adminKeyboardFactory.addAdminKeyboard(context.locale())
+            );
             return;
         }
-        var promotedUser = userService.promoteToAdmin(users[0]);
+        TgUser promotedUser = userService.promoteToAdmin(users[0]);
         conversationService.clear(context.tgUserId());
-        messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "admin.add_admin.success", promotedUser.getName()), userKeyboardFactory.mainMenu(context.locale(), true));
+        messageSender.sendText(
+                context.privateChatId(),
+                botMessages.text(context.locale(), "admin.add_admin.success", promotedUser.getName()),
+                userKeyboardFactory.mainMenu(context.locale(), true, context.activeParticipant())
+        );
     }
 }

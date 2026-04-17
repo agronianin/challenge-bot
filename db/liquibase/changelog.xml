@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <changeSet id="001-create-tg-user" author="victormskl@gmail.com">
@@ -38,9 +38,9 @@
             </column>
             <column name="chat_tg_id" type="BIGINT">
                 <constraints nullable="false"
-                             foreignKeyName="fk_program_chat"
-                             referencedTableName="chat"
-                             referencedColumnNames="tg_chat_id"/>
+                    foreignKeyName="fk_program_chat"
+                    referencedTableName="chat"
+                    referencedColumnNames="tg_chat_id"/>
             </column>
             <column name="days_total" type="INT">
                 <constraints nullable="false"/>
@@ -54,7 +54,7 @@
             <column name="timezone" type="VARCHAR(64)">
                 <constraints nullable="false"/>
             </column>
-            <column name="status" type="VARCHAR(32)" defaultValue="active">
+            <column name="status" type="VARCHAR(32)" defaultValue="ACTIVE">
                 <constraints nullable="false"/>
             </column>
             <column name="exercises_per_day" type="INT" defaultValueNumeric="3">
@@ -93,8 +93,7 @@
                    ('сгибатели рук'),
                    ('разгибатели рук'),
                    ('кардио'),
-                   ('Растяжка')
-            on conflict (name) do nothing
+                   ('Растяжка') on conflict (name) do nothing
         </sql>
     </changeSet>
 
@@ -128,19 +127,19 @@
         <createTable tableName="exercise_type_link">
             <column name="exercise_id" type="INT">
                 <constraints primaryKey="true"
-                             primaryKeyName="pk_exercise_type_link"
-                             nullable="false"
-                             foreignKeyName="fk_exercise_type_link_exercise"
-                             referencedTableName="exercise"
-                             referencedColumnNames="id"/>
+                    primaryKeyName="pk_exercise_type_link"
+                    nullable="false"
+                    foreignKeyName="fk_exercise_type_link_exercise"
+                    referencedTableName="exercise"
+                    referencedColumnNames="id"/>
             </column>
             <column name="type_name" type="VARCHAR(128)">
                 <constraints primaryKey="true"
-                             primaryKeyName="pk_exercise_type_link"
-                             nullable="false"
-                             foreignKeyName="fk_exercise_type_link_exercise_type"
-                             referencedTableName="exercise_type"
-                             referencedColumnNames="name"/>
+                    primaryKeyName="pk_exercise_type_link"
+                    nullable="false"
+                    foreignKeyName="fk_exercise_type_link_exercise_type"
+                    referencedTableName="exercise_type"
+                    referencedColumnNames="name"/>
             </column>
         </createTable>
     </changeSet>
@@ -158,9 +157,9 @@
             </column>
             <column name="program_id" type="INT">
                 <constraints nullable="false"
-                             foreignKeyName="fk_program_day_program"
-                             referencedTableName="program"
-                             referencedColumnNames="id"/>
+                    foreignKeyName="fk_program_day_program"
+                    referencedTableName="program"
+                    referencedColumnNames="id"/>
             </column>
             <column name="day_index" type="INT">
                 <constraints nullable="false"/>
@@ -176,8 +175,8 @@
 
     <changeSet id="011-add-program-day-program-day-unique" author="victormskl@gmail.com">
         <addUniqueConstraint tableName="program_day"
-                             columnNames="program_id,day_index"
-                             constraintName="uq_program_days_program_day"/>
+            columnNames="program_id,day_index"
+            constraintName="uq_program_days_program_day"/>
     </changeSet>
 
     <changeSet id="012-index-program-day-program-id" author="victormskl@gmail.com">
@@ -193,15 +192,15 @@
             </column>
             <column name="program_day_id" type="INT">
                 <constraints nullable="false"
-                             foreignKeyName="fk_day_exercise_program_day"
-                             referencedTableName="program_day"
-                             referencedColumnNames="id"/>
+                    foreignKeyName="fk_day_exercise_program_day"
+                    referencedTableName="program_day"
+                    referencedColumnNames="id"/>
             </column>
             <column name="exercise_id" type="INT">
                 <constraints nullable="false"
-                             foreignKeyName="fk_day_exercise_exercise"
-                             referencedTableName="exercise"
-                             referencedColumnNames="id"/>
+                    foreignKeyName="fk_day_exercise_exercise"
+                    referencedTableName="exercise"
+                    referencedColumnNames="id"/>
             </column>
             <column name="reps" type="INT">
                 <constraints nullable="false"/>
@@ -211,8 +210,8 @@
 
     <changeSet id="014-add-day-exercise-day-exercise-unique" author="victormskl@gmail.com">
         <addUniqueConstraint tableName="day_exercise"
-                             columnNames="program_day_id,exercise_id"
-                             constraintName="uq_day_exercises_day_exercise"/>
+            columnNames="program_day_id,exercise_id"
+            constraintName="uq_day_exercises_day_exercise"/>
     </changeSet>
 
     <changeSet id="015-index-day-exercise-program-day-id" author="victormskl@gmail.com">
@@ -228,15 +227,15 @@
             </column>
             <column name="program_day_id" type="INT">
                 <constraints nullable="false"
-                             foreignKeyName="fk_completion_program_day"
-                             referencedTableName="program_day"
-                             referencedColumnNames="id"/>
+                    foreignKeyName="fk_completion_program_day"
+                    referencedTableName="program_day"
+                    referencedColumnNames="id"/>
             </column>
             <column name="user_id" type="INT">
                 <constraints nullable="false"
-                             foreignKeyName="fk_completion_tg_user"
-                             referencedTableName="tg_user"
-                             referencedColumnNames="id"/>
+                    foreignKeyName="fk_completion_tg_user"
+                    referencedTableName="tg_user"
+                    referencedColumnNames="id"/>
             </column>
             <column name="completed_at" type="TIMESTAMP"/>
             <column name="is_completed" type="BOOLEAN" defaultValueBoolean="true">
@@ -247,8 +246,8 @@
 
     <changeSet id="017-add-completion-day-user-unique" author="victormskl@gmail.com">
         <addUniqueConstraint tableName="completion"
-                             columnNames="program_day_id,user_id"
-                             constraintName="uq_completions_day_user"/>
+            columnNames="program_day_id,user_id"
+            constraintName="uq_completions_day_user"/>
     </changeSet>
 
     <changeSet id="018-index-completion-program-day-id" author="victormskl@gmail.com">
@@ -270,9 +269,9 @@
             </column>
             <column name="user_id" type="INT">
                 <constraints nullable="false"
-                             foreignKeyName="fk_user_reminder_tg_user"
-                             referencedTableName="tg_user"
-                             referencedColumnNames="id"/>
+                    foreignKeyName="fk_user_reminder_tg_user"
+                    referencedTableName="tg_user"
+                    referencedColumnNames="id"/>
             </column>
             <column name="enabled" type="BOOLEAN" defaultValueBoolean="true">
                 <constraints nullable="false"/>
@@ -285,8 +284,8 @@
 
     <changeSet id="021-add-user-reminder-user-time-unique" author="victormskl@gmail.com">
         <addUniqueConstraint tableName="user_reminder"
-                             columnNames="user_id,remind_time"
-                             constraintName="uq_user_reminders_user_time"/>
+            columnNames="user_id,remind_time"
+            constraintName="uq_user_reminders_user_time"/>
     </changeSet>
 
     <changeSet id="022-index-user-reminder-user-id" author="victormskl@gmail.com">
@@ -302,15 +301,15 @@
             </column>
             <column name="program_id" type="INT">
                 <constraints nullable="false"
-                             foreignKeyName="fk_program_participant_program"
-                             referencedTableName="program"
-                             referencedColumnNames="id"/>
+                    foreignKeyName="fk_program_participant_program"
+                    referencedTableName="program"
+                    referencedColumnNames="id"/>
             </column>
             <column name="user_id" type="INT">
                 <constraints nullable="false"
-                             foreignKeyName="fk_program_participant_tg_user"
-                             referencedTableName="tg_user"
-                             referencedColumnNames="id"/>
+                    foreignKeyName="fk_program_participant_tg_user"
+                    referencedTableName="tg_user"
+                    referencedColumnNames="id"/>
             </column>
             <column name="joined_at" type="TIMESTAMP">
                 <constraints nullable="false"/>
@@ -323,8 +322,8 @@
 
     <changeSet id="024-add-program-participant-program-user-unique" author="victormskl@gmail.com">
         <addUniqueConstraint tableName="program_participant"
-                             columnNames="program_id,user_id"
-                             constraintName="uq_program_participants_program_user"/>
+            columnNames="program_id,user_id"
+            constraintName="uq_program_participants_program_user"/>
     </changeSet>
 
     <changeSet id="025-index-program-participant-program-id" author="victormskl@gmail.com">
@@ -346,9 +345,9 @@
             </column>
             <column name="program_day_id" type="INT">
                 <constraints nullable="false"
-                             foreignKeyName="fk_program_day_message_program_day"
-                             referencedTableName="program_day"
-                             referencedColumnNames="id"/>
+                    foreignKeyName="fk_program_day_message_program_day"
+                    referencedTableName="program_day"
+                    referencedColumnNames="id"/>
             </column>
             <column name="tg_chat_id" type="BIGINT">
                 <constraints nullable="false"/>
@@ -370,7 +369,7 @@
 
     <changeSet id="029-add-program-day-message-chat-message-unique" author="victormskl@gmail.com">
         <addUniqueConstraint tableName="program_day_message"
-                             columnNames="tg_chat_id,message_id"
-                             constraintName="uq_program_day_messages_chat_message"/>
+            columnNames="tg_chat_id,message_id"
+            constraintName="uq_program_day_messages_chat_message"/>
     </changeSet>
 </databaseChangeLog>

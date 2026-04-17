@@ -36,7 +36,7 @@ public class Completion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private TgUser user;
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;

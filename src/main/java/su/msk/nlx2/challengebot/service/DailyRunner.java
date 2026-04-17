@@ -20,9 +20,10 @@ import su.msk.nlx2.challengebot.model.Program;
 import su.msk.nlx2.challengebot.model.ProgramDay;
 import su.msk.nlx2.challengebot.model.ProgramDayMessage;
 import su.msk.nlx2.challengebot.model.ProgramParticipant;
-import su.msk.nlx2.challengebot.model.User;
+import su.msk.nlx2.challengebot.model.TgUser;
 import su.msk.nlx2.challengebot.model.bot.SentMessageInfo;
 import su.msk.nlx2.challengebot.model.type.ProgramActionResult;
+import su.msk.nlx2.challengebot.model.type.ProgramStatus;
 import su.msk.nlx2.challengebot.repository.DayExerciseRepository;
 import su.msk.nlx2.challengebot.repository.ExerciseRepository;
 import su.msk.nlx2.challengebot.repository.ProgramDayRepository;
@@ -36,7 +37,7 @@ import su.msk.nlx2.challengebot.service.bot.keyboard.ChallengeKeyboardFactory;
 @Slf4j
 @RequiredArgsConstructor
 public class DailyRunner {
-    private static final List<String> PUBLISHABLE_PROGRAM_STATUSES = List.of("active", "scheduled");
+    private static final List<ProgramStatus> PUBLISHABLE_PROGRAM_STATUSES = List.of(ProgramStatus.ACTIVE, ProgramStatus.SCHEDULED);
     private static final String DAY_STATUS_PLANNED = "planned";
     private static final String DAY_STATUS_PUBLISHED = "published";
 
@@ -67,7 +68,7 @@ public class DailyRunner {
     }
 
     @Transactional
-    public boolean sendCurrentPublishedDayToUser(Integer programId, User user, Locale locale) {
+    public boolean sendCurrentPublishedDayToUser(Integer programId, TgUser user, Locale locale) {
         Program program = programRepository.findById(programId).orElse(null);
         if (program == null) {
             return false;
@@ -76,6 +77,10 @@ public class DailyRunner {
         ProgramDay day = programDayRepository.findByProgram_IdAndDateAndStatus(programId, today, DAY_STATUS_PUBLISHED).orElse(null);
         if (day == null) {
             return false;
+        }
+        if (isRestDay(day)) {
+            sendPersonalRestDay(day, user, locale);
+            return true;
         }
         List<DayExercise> dayExercises = dayExerciseRepository.findByProgramDay_IdOrderById(day.getId());
         sendPersonalDay(day, dayExercises, user, locale);
@@ -91,9 +96,12 @@ public class DailyRunner {
         if (day == null) {
             return ProgramActionResult.NO_CHANGES;
         }
-        List<DayExercise> dayExercises = getOrCreateDayExercises(day);
         deleteGroupMessages(day);
-        sendGroupDay(day, dayExercises);
+        if (isRestDay(day)) {
+            sendGroupRestDay(day);
+            return ProgramActionResult.SUCCESS;
+        }
+        sendGroupDay(day, getOrCreateDayExercises(day));
         return ProgramActionResult.SUCCESS;
     }
 
@@ -109,6 +117,14 @@ public class DailyRunner {
         if (day == null || !DAY_STATUS_PLANNED.equals(day.getStatus())) {
             return;
         }
+        if (isRestDay(day)) {
+            sendGroupRestDay(day);
+            day.setStatus(DAY_STATUS_PUBLISHED);
+            programDayRepository.save(day);
+            activateScheduledProgram(program);
+            sendPersonalRestDayToParticipants(day);
+            return;
+        }
         List<DayExercise> dayExercises = getOrCreateDayExercises(day);
         if (dayExercises.isEmpty()) {
             log.warn("No exercises selected for programId={}, dayId={}", program.getId(), day.getId());
@@ -117,11 +133,20 @@ public class DailyRunner {
         sendGroupDay(day, dayExercises);
         day.setStatus(DAY_STATUS_PUBLISHED);
         programDayRepository.save(day);
-        if ("scheduled".equals(program.getStatus())) {
-            program.setStatus("active");
+        activateScheduledProgram(program);
+        sendPersonalDayToParticipants(day, dayExercises);
+    }
+
+    private void activateScheduledProgram(Program program) {
+        if (program.getStatus() == ProgramStatus.SCHEDULED) {
+            program.setStatus(ProgramStatus.ACTIVE);
             programRepository.save(program);
         }
-        sendPersonalDayToParticipants(day, dayExercises);
+    }
+
+    private boolean isRestDay(ProgramDay day) {
+        Integer frequency = day.getProgram().getRestDayFrequency();
+        return frequency != null && frequency > 0 && day.getDayIndex() % (frequency + 1) == 0;
     }
 
     private List<DayExercise> getOrCreateDayExercises(ProgramDay day) {
@@ -146,7 +171,13 @@ public class DailyRunner {
         DayExercise dayExercise = new DayExercise();
         dayExercise.setProgramDay(day);
         dayExercise.setExercise(exercise);
-        dayExercise.setReps(repsCalculator.calculateProgramReps(exercise, day.getDayIndex(), botProperties.getRepsGrowthPercent(), botProperties.getRepsRoundMode()));
+        int reps = repsCalculator.calculateProgramReps(
+                exercise,
+                day.getDayIndex(),
+                botProperties.getRepsGrowthPercent(),
+                botProperties.getRepsRoundMode()
+        );
+        dayExercise.setReps(reps);
         return dayExercise;
     }
 
@@ -170,6 +201,17 @@ public class DailyRunner {
         ));
     }
 
+    private void sendGroupRestDay(ProgramDay day) {
+        Locale locale = botMessages.defaultLocale();
+        long chatId = day.getProgram().getChat().getTgChatId();
+        saveGroupMessage(day, messageSender.sendTextWithResult(chatId, botMessages.text(locale, "challenge.daily.group.header", day.getDayIndex())));
+        saveGroupMessage(day, messageSender.sendTextWithResult(
+                chatId,
+                botMessages.text(locale, "challenge.daily.group.rest_day"),
+                challengeKeyboardFactory.joinChallengeKeyboard(locale, day.getProgram().getId())
+        ));
+    }
+
     private void sendPersonalDayToParticipants(ProgramDay day, List<DayExercise> dayExercises) {
         for (ProgramParticipant participant : programParticipantRepository.findByProgram_IdAndActiveTrue(day.getProgram().getId())) {
             Locale locale = botMessages.resolveLocale(participant.getUser(), null);
@@ -177,11 +219,23 @@ public class DailyRunner {
         }
     }
 
-    private void sendPersonalDay(ProgramDay day, List<DayExercise> dayExercises, User user, Locale locale) {
+    private void sendPersonalRestDayToParticipants(ProgramDay day) {
+        for (ProgramParticipant participant : programParticipantRepository.findByProgram_IdAndActiveTrue(day.getProgram().getId())) {
+            Locale locale = botMessages.resolveLocale(participant.getUser(), null);
+            sendPersonalRestDay(day, participant.getUser(), locale);
+        }
+    }
+
+    private void sendPersonalDay(ProgramDay day, List<DayExercise> dayExercises, TgUser user, Locale locale) {
         messageSender.sendText(user.getTgId(), botMessages.text(locale, "challenge.daily.private.header", day.getDayIndex()));
         for (DayExercise dayExercise : dayExercises) {
             messageSender.sendVideo(user.getTgId(), dayExercise.getExercise(), personalExerciseCaption(dayExercise, user, locale));
         }
+    }
+
+    private void sendPersonalRestDay(ProgramDay day, TgUser user, Locale locale) {
+        messageSender.sendText(user.getTgId(), botMessages.text(locale, "challenge.daily.private.header", day.getDayIndex()));
+        messageSender.sendText(user.getTgId(), botMessages.text(locale, "challenge.daily.private.rest_day"));
     }
 
     private void saveGroupMessage(ProgramDay day, SentMessageInfo sentMessage) {
@@ -214,13 +268,20 @@ public class DailyRunner {
         return botMessages.text(locale, "challenge.daily.group.exercise_caption", escapeHtml(exercise.getName()), comment);
     }
 
-    private String personalExerciseCaption(DayExercise dayExercise, User user, Locale locale) {
+    private String personalExerciseCaption(DayExercise dayExercise, TgUser user, Locale locale) {
         int reps = repsCalculator.calculatePersonalReps(dayExercise, user, botProperties.getRepsGrowthPercent(), botProperties.getRepsRoundMode());
         String repsUnit = botMessages.text(locale, "challenge.daily.reps_unit." + dayExercise.getExercise().getRepsUnit().name());
         String comment = dayExercise.getExercise().getComment() == null || dayExercise.getExercise().getComment().isBlank()
                 ? ""
                 : "\n" + escapeHtml(dayExercise.getExercise().getComment());
-        return botMessages.text(locale, "challenge.daily.private.exercise_caption", escapeHtml(dayExercise.getExercise().getName()), reps, repsUnit, comment);
+        return botMessages.text(
+                locale,
+                "challenge.daily.private.exercise_caption",
+                escapeHtml(dayExercise.getExercise().getName()),
+                reps,
+                repsUnit,
+                comment
+        );
     }
 
     private Set<String> previousDayTypeNames(ProgramDay day) {

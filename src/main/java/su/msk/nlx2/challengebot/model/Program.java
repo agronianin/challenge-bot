@@ -2,6 +2,8 @@ package su.msk.nlx2.challengebot.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +18,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import su.msk.nlx2.challengebot.model.type.ProgramStatus;
 
 @Entity
 @Getter
@@ -44,7 +47,8 @@ public class Program {
     private String timezone;
 
     @Column(name = "status", nullable = false, length = 32)
-    private String status = "active";
+    @Enumerated(EnumType.STRING)
+    private ProgramStatus status = ProgramStatus.ACTIVE;
 
     @Column(name = "exercises_per_day", nullable = false)
     private Integer exercisesPerDay = 3;

@@ -9,6 +9,7 @@ public record MessageHandlerContext(
         Message message,
         String text,
         Locale locale,
-        boolean admin
+        boolean admin,
+        boolean activeParticipant
 ) {
 }

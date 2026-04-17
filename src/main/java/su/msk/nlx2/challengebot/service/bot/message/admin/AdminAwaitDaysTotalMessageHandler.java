@@ -30,12 +30,20 @@ public class AdminAwaitDaysTotalMessageHandler extends MessageHandler {
     public void handle(MessageHandlerContext context) {
         Integer daysTotal = MessageParsingUtils.parsePositiveInteger(context.text());
         if (daysTotal == null) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "challenge.create.invalid_days_total"), adminKeyboardFactory.cancelOnly(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "challenge.create.invalid_days_total"),
+                    adminKeyboardFactory.cancelOnly(context.locale())
+            );
             return;
         }
         ConversationSession session = conversationService.find(context.tgUserId()).orElseThrow();
         session.setDaysTotal(daysTotal);
         session.setStep(ConversationStep.CREATE_CHALLENGE_AWAIT_POST_TIME);
-        messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "challenge.create.ask_post_time"), adminKeyboardFactory.cancelOnly(context.locale()));
+        messageSender.sendText(
+                context.privateChatId(),
+                botMessages.text(context.locale(), "challenge.create.ask_post_time"),
+                adminKeyboardFactory.cancelOnly(context.locale())
+        );
     }
 }

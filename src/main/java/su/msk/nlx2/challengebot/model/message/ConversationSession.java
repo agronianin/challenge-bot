@@ -17,4 +17,5 @@ public class ConversationSession {
     private String timezone;
     private Integer exercisesPerDay;
     private Integer typesPerDay;
+    private Integer restDayFrequency;
 }

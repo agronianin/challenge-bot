@@ -7,6 +7,7 @@ import com.pengrad.telegrambot.model.Update;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import su.msk.nlx2.challengebot.model.TgUser;
 import su.msk.nlx2.challengebot.service.bot.context.BotRequestContextResolver;
 import su.msk.nlx2.challengebot.service.bot.update.CallbackQueryUpdateHandler;
 import su.msk.nlx2.challengebot.service.bot.update.PrivateChatUpdateHandler;
@@ -33,11 +34,11 @@ public class UpdateHandler implements UpdatesListener {
     }
 
     private void handleMessage(Message message) {
-        var context = botRequestContextResolver.syncFromMessage(message).orElse(null);
-        if (context == null || !isPrivateChat(message)) {
+        TgUser user = botRequestContextResolver.syncFromMessage(message).orElse(null);
+        if (user == null || !isPrivateChat(message)) {
             return;
         }
-        privateChatUpdateHandler.handle(message, context);
+        privateChatUpdateHandler.handle(message, user);
     }
 
     private boolean isPrivateChat(Message message) {

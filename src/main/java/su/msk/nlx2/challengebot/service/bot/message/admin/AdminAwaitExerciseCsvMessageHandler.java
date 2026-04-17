@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import su.msk.nlx2.challengebot.model.csv.ExerciseCsvImportResult;
 import su.msk.nlx2.challengebot.model.type.ConversationStep;
 import su.msk.nlx2.challengebot.service.BotMessages;
 import su.msk.nlx2.challengebot.service.CsvImporter;
@@ -34,13 +35,17 @@ public class AdminAwaitExerciseCsvMessageHandler extends MessageHandler {
     @Override
     public void handle(MessageHandlerContext context) {
         if (!isCsvDocument(context)) {
-            messageSender.sendText(context.privateChatId(), botMessages.text(context.locale(), "admin.exercise_csv.invalid_document"), adminKeyboardFactory.cancelOnly(context.locale()));
+            messageSender.sendText(
+                    context.privateChatId(),
+                    botMessages.text(context.locale(), "admin.exercise_csv.invalid_document"),
+                    adminKeyboardFactory.cancelOnly(context.locale())
+            );
             return;
         }
         Path tempFile = null;
         try {
             tempFile = telegramDocumentService.downloadToTempFile(context.message().document(), "exercise-import-");
-            var result = csvImporter.importExercises(tempFile);
+            ExerciseCsvImportResult result = csvImporter.importExercises(tempFile);
             conversationService.clear(context.tgUserId());
             messageSender.sendText(
                     context.privateChatId(),

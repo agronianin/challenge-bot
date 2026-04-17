@@ -10,8 +10,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,7 +24,7 @@ import su.msk.nlx2.challengebot.model.type.UserRole;
 @Setter
 @NoArgsConstructor
 @Table(name = "tg_user")
-public class User {
+public class TgUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -34,7 +36,7 @@ public class User {
     private String name;
 
     @Column(name = "locale", length = 16)
-    private String locale;
+    private String localeCode;
 
     @Column(name = "max_pull_ups")
     private Integer maxPullUps;
@@ -52,4 +54,14 @@ public class User {
     @OrderBy("remindTime asc")
     @OneToMany(mappedBy = "user")
     private List<UserReminder> reminders = new ArrayList<>();
+
+    @Transient
+    private Locale locale;
+
+    @Transient
+    private boolean activeParticipant;
+
+    public boolean isAdmin() {
+        return role == UserRole.ADMIN;
+    }
 }

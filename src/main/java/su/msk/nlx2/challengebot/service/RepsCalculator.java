@@ -5,7 +5,7 @@ import java.math.RoundingMode;
 import org.springframework.stereotype.Service;
 import su.msk.nlx2.challengebot.model.DayExercise;
 import su.msk.nlx2.challengebot.model.Exercise;
-import su.msk.nlx2.challengebot.model.User;
+import su.msk.nlx2.challengebot.model.TgUser;
 
 @Service
 public class RepsCalculator {
@@ -28,8 +28,14 @@ public class RepsCalculator {
         return calculatePersonalReps(exercise, dayIndex, growthPercent, roundMode, BASELINE_PULL_UPS);
     }
 
-    public int calculatePersonalReps(DayExercise dayExercise, User user, double growthPercent, String roundMode) {
-        return calculatePersonalReps(dayExercise.getExercise(), dayExercise.getProgramDay().getDayIndex(), growthPercent, roundMode, user.getMaxPullUps());
+    public int calculatePersonalReps(DayExercise dayExercise, TgUser user, double growthPercent, String roundMode) {
+        return calculatePersonalReps(
+                dayExercise.getExercise(),
+                dayExercise.getProgramDay().getDayIndex(),
+                growthPercent,
+                roundMode,
+                user.getMaxPullUps()
+        );
     }
 
     private int calculatePersonalReps(Exercise exercise, int dayIndex, double growthPercent, String roundMode, Integer maxPullUps) {

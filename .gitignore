@@ -1,4 +1,18 @@
+# Приватные данные, конфиги и локальные результаты
+.local/
 .env
+.env.*
+!.env.example
+config/
+logs/
+examples/
+*.mp4
+*.mov
+*.dump
+*.sql.gz
+*.pem
+*.key
+
 .venv/
 __pycache__/
 *.pyc
@@ -6,5 +20,4 @@ target/
 *.iml
 .idea/
 out/
-logs/
 .DS_Store

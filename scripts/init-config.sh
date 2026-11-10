@@ -6,22 +6,21 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${REPO_ROOT}"
 
-docker compose build bot
-
-IMAGE_ID="$(docker compose images -q bot)"
-if [[ -z "${IMAGE_ID}" ]]; then
-  echo "Не удалось получить image id для сервиса bot" >&2
+if [[ -e .local/config ]]; then
+  echo "Каталог .local/config уже существует; сохраните настройки перед повторной инициализацией." >&2
   exit 1
 fi
 
-mkdir -p config
+./scripts/compose.sh build bot
 
-TMP_CONTAINER_ID="$(docker create "${IMAGE_ID}")"
+mkdir -p .local/config
+
+TMP_CONTAINER_ID="$(docker create challenge-bot:local)"
 cleanup() {
   docker rm -f "${TMP_CONTAINER_ID}" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
-docker cp "${TMP_CONTAINER_ID}:/app/default-config/." "${REPO_ROOT}/config"
+docker cp "${TMP_CONTAINER_ID}:/app/default-config/." "${REPO_ROOT}/.local/config"
 
-echo "Конфиги выгружены в ${REPO_ROOT}/config"
+echo "Конфиги выгружены в ${REPO_ROOT}/.local/config"

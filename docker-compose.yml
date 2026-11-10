@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:16
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:-challenge}
       POSTGRES_USER: ${DB_USER:-challenge}
@@ -12,27 +13,29 @@ services:
       timeout: 5s
       retries: 10
     ports:
-      - "0.0.0.0:5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
   bot:
+    image: challenge-bot:local
     build: .
-    env_file: .env
+    env_file: .local/runtime.env
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
     environment:
-      DATABASE_URL: "jdbc:postgresql://postgres:5432/challenge"
+      DATABASE_URL: "jdbc:postgresql://postgres:5432/${DB_NAME:-challenge}"
       LOG_DIR: "/app/logs"
       SPRING_CONFIG_ADDITIONAL_LOCATION: "optional:file:/app/external-config/"
       JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     ports:
-      - "0.0.0.0:5005:5005"
+      - "127.0.0.1:5005:5005"
     volumes:
-      - ./config:/app/external-config
-      - ./logs:/app/logs
+      - ./.local/config:/app/external-config:ro
+      - ./.local/logs:/app/logs
+      - ./.local/datasets/exercises/videos:/app/videos:ro
 
   migrate:
     image: liquibase/liquibase:4.32
@@ -40,12 +43,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    env_file: .env
+    env_file: .local/runtime.env
     working_dir: /workspace
     volumes:
-      - .:/workspace
+      - ./db/liquibase:/workspace/db/liquibase:ro
     command:
-      - --url=jdbc:postgresql://postgres:5432/challenge
+      - --url=jdbc:postgresql://postgres:5432/${DB_NAME:-challenge}
       - --username=${DB_USER:-challenge}
       - --password=${DB_PASSWORD:-challenge}
       - --changeLogFile=db/liquibase/changelog.xml

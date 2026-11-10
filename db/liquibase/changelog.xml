@@ -117,6 +117,10 @@
             <column name="reps_unit" type="VARCHAR(32)" defaultValue="REPS">
                 <constraints nullable="false"/>
             </column>
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="selection_group" type="VARCHAR(64)"/>
             <column name="comment" type="TEXT"/>
             <column name="video_path" type="VARCHAR(1024)"/>
             <column name="file_id" type="VARCHAR(512)"/>
@@ -372,4 +376,5 @@
             columnNames="tg_chat_id,message_id"
             constraintName="uq_program_day_messages_chat_message"/>
     </changeSet>
+
 </databaseChangeLog>

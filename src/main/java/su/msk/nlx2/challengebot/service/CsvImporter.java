@@ -32,6 +32,8 @@ public class CsvImporter {
     private static final String HEADER_IS_STATIC_REPS = "is_static_reps";
     private static final String HEADER_STATIC_REPS = "static_reps";
     private static final String HEADER_REPS_UNIT = "reps_unit";
+    private static final String HEADER_ENABLED = "enabled";
+    private static final String HEADER_SELECTION_GROUP = "selection_group";
     private static final String HEADER_VIDEO_PATH = "video_path";
     private static final String HEADER_COMMENT = "comment";
 
@@ -73,10 +75,12 @@ public class CsvImporter {
         Boolean staticReps = getBoolean(record, HEADER_IS_STATIC_REPS);
         Integer staticRepsValue = getNonNegativeInteger(record, HEADER_STATIC_REPS);
         RepsUnit repsUnit = getRepsUnit(record);
-        String videoPath = getOptionalValue(record, HEADER_VIDEO_PATH);
-        String comment = getOptionalValue(record, HEADER_COMMENT);
         Exercise exercise = exerciseRepository.findByName(name).orElseGet(Exercise::new);
         boolean created = exercise.getId() == null;
+        Boolean enabled = getOptionalBoolean(record, HEADER_ENABLED).orElse(created ? true : exercise.getEnabled());
+        String selectionGroup = getOptionalValue(record, HEADER_SELECTION_GROUP);
+        String videoPath = getOptionalValue(record, HEADER_VIDEO_PATH);
+        String comment = getOptionalValue(record, HEADER_COMMENT);
         exercise.setName(name);
         exercise.getTypes().clear();
         exercise.getTypes().addAll(types);
@@ -84,6 +88,8 @@ public class CsvImporter {
         exercise.setStaticReps(staticReps);
         exercise.setStaticRepsValue(staticRepsValue);
         exercise.setRepsUnit(repsUnit);
+        exercise.setEnabled(enabled);
+        exercise.setSelectionGroup(selectionGroup);
         exercise.setVideoPath(videoPath);
         exercise.setComment(comment);
         exerciseRepository.save(exercise);
@@ -146,6 +152,18 @@ public class CsvImporter {
 
     private Boolean getBoolean(CSVRecord record, String header) {
         String value = getRequiredValue(record, header).toLowerCase();
+        return parseBoolean(record, header, value);
+    }
+
+    private java.util.Optional<Boolean> getOptionalBoolean(CSVRecord record, String header) {
+        String value = getOptionalValue(record, header);
+        if (value == null) {
+            return java.util.Optional.empty();
+        }
+        return java.util.Optional.of(parseBoolean(record, header, value.toLowerCase()));
+    }
+
+    private Boolean parseBoolean(CSVRecord record, String header, String value) {
         return switch (value) {
             case "true", "1", "yes", "y", "да" -> true;
             case "false", "0", "no", "n", "нет" -> false;

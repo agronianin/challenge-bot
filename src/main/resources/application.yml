@@ -27,4 +27,4 @@ spring:
 
 logging:
   file:
-    path: ${LOG_DIR:./logs}
+    path: ${LOG_DIR:./.local/logs}

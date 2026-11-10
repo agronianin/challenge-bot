@@ -1,0 +1,8 @@
+*
+!pom.xml
+!src/
+!src/**
+!docker/
+!docker/entrypoint.sh
+**/AGENTS.md
+**/*.md

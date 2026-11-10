@@ -6,4 +6,4 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${REPO_ROOT}"
 
-docker compose up -d postgres
+./scripts/compose.sh up -d postgres

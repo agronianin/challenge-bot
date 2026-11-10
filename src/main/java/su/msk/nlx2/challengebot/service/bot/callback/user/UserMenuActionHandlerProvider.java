@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserMenuActionHandlerProvider {
+
     private final Map<String, UserMenuActionHandler> handlers = new HashMap<>();
 
     public void register(UserMenuActionHandler userMenuActionHandler) {
         handlers.put(userMenuActionHandler.callbackData(), userMenuActionHandler);
-        userMenuActionHandler.setHandlerProvider(this);
     }
 
     public boolean handles(String callbackData) {

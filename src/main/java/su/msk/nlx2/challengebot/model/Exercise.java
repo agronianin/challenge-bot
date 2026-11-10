@@ -62,6 +62,12 @@ public class Exercise {
     @Column(name = "reps_unit", nullable = false, length = 32)
     private RepsUnit repsUnit = RepsUnit.REPS;
 
+    @Column(name = "enabled", nullable = false)
+    private Boolean enabled = true;
+
+    @Column(name = "selection_group", length = 64)
+    private String selectionGroup;
+
     @Column(name = "comment")
     private String comment;
 

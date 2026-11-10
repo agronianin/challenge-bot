@@ -6,4 +6,4 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${REPO_ROOT}"
 
-docker compose --profile tools run --rm migrate
+./scripts/compose.sh --profile tools run --rm migrate

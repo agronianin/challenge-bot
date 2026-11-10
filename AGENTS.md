@@ -1,17 +1,19 @@
-# AGENTS.md
+# Правила проекта
 
-## Project-Specific Instructions
+- Инструкции, документацию и объяснения веди на русском, идентификаторы кода — на английском.
+- Общие правила проекта храни здесь; правила области — в её локальном `AGENTS.md`, тематические процессы — в документах по ссылкам ниже. Не переноси проектные правила в глобальные инструкции или только в память и не дублируй подробности в корне.
+- Перед работой читай применимые `AGENTS.md` от корня до рабочего каталога; локальные правила имеют приоритет.
+- Самостоятельно исправляй обнаруженные устаревшие или противоречивые инструкции и синхронизируй все затронутые документы и ссылки в рамках задачи. Основания — код, конфигурация, проверки и указания пользователя; не подменяй неизвестное предположениями и не отменяй требования под видом актуализации.
+- Сохраняй существующие пользовательские изменения и неотслеживаемые материалы. Приватные данные храни только в игнорируемой `.local/`; не включай их в Git, публичные документы и вывод команд.
+- При новом устойчивом правиле или повторяемой операции добавляй краткую инструкцию в ближайший подходящий файл; создавай новый только для самостоятельной области. В корне добавляй ссылку с условием чтения. Разовые результаты и частные данные не превращай в общие инструкции.
+- Разделяй требования, решения, гипотезы, реализацию, фактическую проверку и оставшуюся работу. Исторические записи сохраняй с датой и обозначением прошлого состояния.
 
-- Before changing bot flow architecture, reread this file.
-- Keep `Promt.md`, `Status.md`, and `README.md` updated when behavior, schema, deployment, or operational instructions change.
-- Conversation flows must go through `ConversationStep` + `MessageHandlerProvider`.
-- Do not add `ConversationStep`-specific branches to `PrivateChatUpdateHandler`; if a Telegram update type is needed for a step, add it to `MessageHandlerContext` and handle it in the step handler.
-- Admin message handlers live in `su.msk.nlx2.challengebot.service.bot.message.admin`.
-- User message handlers live in `su.msk.nlx2.challengebot.service.bot.message.user`.
-- Shared handler infrastructure stays in `su.msk.nlx2.challengebot.service.bot.message`.
-- Project targets Java 25.
-- Use `./mvnw` for local Maven commands. The wrapper pins Maven 3.9.14 and avoids Maven/Guice `sun.misc.Unsafe` warnings seen with Maven 3.9.11 on JDK 25.
-- Java line length limit is 150 characters.
-- If a method declaration or method call with all parameters fits into one line within 150 characters, keep it on one line.
-- If a method declaration or method call does not fit into one line within 150 characters, put each parameter/argument on its own line.
-- Do not use `var` in Java code; use explicit types to keep code readable and clear.
+## Что читать по задаче
+
+- Перед изменением файлов или Git-состояния, публикацией или слиянием — [docs/GIT.md](docs/GIT.md).
+- Перед изменением поведения — затронутые сценарии [Promt.md](Promt.md) и состояние [Status.md](Status.md); обновляй их по результату. Навигацию поддерживай в [README.md](README.md), команды и эксплуатацию описывай в [scripts/README.md](scripts/README.md), восстановление — в [HANDOFF.md](HANDOFF.md), без дублирования.
+- Перед изучением, изменением или сборкой Java-кода — [src/main/java/AGENTS.md](src/main/java/AGENTS.md); перед Telegram-flow дополнительно — [правила bot-слоя](src/main/java/su/msk/nlx2/challengebot/service/bot/AGENTS.md).
+- Перед планированием, написанием или запуском тестов — [src/test/AGENTS.md](src/test/AGENTS.md).
+- Перед изменением схемы, миграциями или их проверкой — [db/liquibase/AGENTS.md](db/liquibase/AGENTS.md).
+- Перед изменением или запуском эксплуатационных скриптов, контейнеров и runtime-конфигурации — [scripts/AGENTS.md](scripts/AGENTS.md).
+- Перед чтением, записью или переносом приватных данных — [docs/PRIVATE-DATA.md](docs/PRIVATE-DATA.md); перед каталогом упражнений, CSV и видео — [datasets/AGENTS.md](datasets/AGENTS.md) и [datasets/README.md](datasets/README.md).
